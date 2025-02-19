@@ -6,14 +6,7 @@ export function GuardProvider({ children }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState(null);
 
-  const login = async (credentials) => {
-    try {
-      setUser(credentials); 
-      setIsAuthenticated(true);
-    } catch (error) {
-      throw error;
-    }
-  };
+
 
   const logout = () => {
     setUser(null);
@@ -24,10 +17,12 @@ export function GuardProvider({ children }) {
     <GuardContext.Provider
       value={{
         isAuthenticated,
+        setIsAuthenticated,
         user,
-        login,
+        setUser,
         logout,
-        setIsAuthenticated
+        
+        
       }}
     >
       {children}

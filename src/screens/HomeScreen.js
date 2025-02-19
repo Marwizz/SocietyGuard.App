@@ -1,21 +1,440 @@
-import { View, Text,StyleSheet } from 'react-native'
-import React from 'react'
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  TextInput,
+  Alert,
+} from "react-native";
+import React, { useContext, useState, useRef, useEffect } from "react";
+import { Ionicons } from "@expo/vector-icons";
+import { GuardContext } from "../GuardContext";
+import { ScrollView } from "react-native-gesture-handler";
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import { verifyVisitorOTP } from "../services/operations/preApproveApi";
+import { useNavigation } from "@react-navigation/native";
 
 export default function HomeScreen() {
+  const { user } = useContext(GuardContext);
+  const [code, setCode] = useState(["", "", "", "", "", ""]);
+  const [isLoading, setIsLoading] = useState(false);
+  const inputRefs = useRef([]);
+  const navigation = useNavigation();
+
+  // Initialize refs array
+  React.useEffect(() => {
+    inputRefs.current = inputRefs.current.slice(0, 6);
+  }, []);
+
+  const handleCodeChange = (text, index) => {
+    // Only allow numbers
+    if (!/^\d*$/.test(text)) return;
+
+    const newCode = [...code];
+    newCode[index] = text;
+    setCode(newCode);
+
+    // If a number is entered and there's a next input, focus it
+    if (text.length === 1 && index < 5) {
+      inputRefs.current[index + 1].focus();
+    }
+  };
+
+  const handleKeyPress = (e, index) => {
+    // Handle backspace
+    if (e.nativeEvent.key === "Backspace") {
+      // If current input is empty and there's a previous input, go back
+      if (code[index] === "" && index > 0) {
+        const newCode = [...code];
+        newCode[index - 1] = "";
+        setCode(newCode);
+        inputRefs.current[index - 1].focus();
+      } else {
+        // Clear current input
+        const newCode = [...code];
+        newCode[index] = "";
+        setCode(newCode);
+      }
+    }
+  };
+
+  const isVerifyDisabled = code.some((digit) => digit === "") || isLoading;
+
+  const handleVerify = async () => {
+    const verificationCode = code.join("");
+
+    if (verificationCode.length !== 6) {
+      Alert.alert("Error", "Please enter a valid 6-digit OTP");
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+
+      const otpData = {
+        otp: verificationCode,
+      };
+
+      const response = await verifyVisitorOTP(otpData);
+      console.log(otpData);
+
+      resetFields();
+
+      Alert.alert("Success", "OTP verified successfully", [{ text: "OK" }]);
+    } catch (error) {
+      console.error(error);
+      Alert.alert("Error", "Failed to verify OTP. Please try again.", [
+        { text: "OK" },
+      ]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const resetFields = () => {
+    setCode(["", "", "", "", "", ""]);
+  };
+
   return (
     <View style={styles.container}>
-      <Text>HomeScreen</Text>
+      <View style={styles.header}>
+        <TouchableOpacity>
+          {user?.profileImage ? (
+            <Image
+              source={{ uri: user.profileImage }}
+              style={styles.profileImage}
+            />
+          ) : (
+            <Ionicons name="person-circle-outline" size={40} color="#000" />
+          )}
+        </TouchableOpacity>
+
+        <View style={styles.headerTextContainer}>
+          <Text style={styles.name}>{user?.memberName || "Ramu"}</Text>
+          <Text style={styles.block}>{user?.HouseId?.Name || "Main Gate"}</Text>
+        </View>
+
+        <Ionicons
+          name="search-outline"
+          size={24}
+          color="#333"
+          style={styles.icon}
+        />
+        <Ionicons
+          name="notifications-outline"
+          size={24}
+          color="black"
+          style={styles.icon}
+        />
+      </View>
+
+      <View style={styles.preApprovedContainer}>
+        <Text style={styles.sectionLabel}>Pre-approved</Text>
+        <View style={styles.codeContainer}>
+          {code.map((digit, index) => (
+            <TextInput
+              key={index}
+              ref={(ref) => (inputRefs.current[index] = ref)}
+              style={[
+                styles.digitBox,
+                digit && styles.digitBoxFilled,
+                index === code.findIndex((d) => d === "") &&
+                  styles.digitBoxActive,
+              ]}
+              value={digit}
+              onChangeText={(text) => handleCodeChange(text, index)}
+              onKeyPress={(e) => handleKeyPress(e, index)}
+              keyboardType="phone-pad"
+              maxLength={1}
+              selectTextOnFocus
+            />
+          ))}
+        </View>
+        <TouchableOpacity
+          style={[
+            styles.verifyButton,
+            isVerifyDisabled && styles.verifyButtonDisabled,
+          ]}
+          onPress={handleVerify}
+          disabled={isVerifyDisabled}
+        >
+          <Text
+            style={[
+              styles.verifyText,
+              isVerifyDisabled && styles.verifyTextDisabled,
+            ]}
+          >
+            Verify
+          </Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* Icons row */}
+      <ScrollView>
+        <View style={styles.iconsRow}>
+          <TouchableOpacity
+            style={styles.iconButton}
+            onPress={() =>
+              navigation.navigate("GroupPreapprove", {
+                societyId: user?.SocietyId,
+              })
+            }
+          >
+            <View style={styles.preApprovedicon}>
+              <Ionicons name="people-outline" size={30} color="#EAB308" />
+            </View>
+            <Text style={styles.iconText}>Group</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.iconButton}>
+            <View style={styles.preApprovedicon}>
+              <Ionicons name="car-outline" size={30} color="#EAB308" />
+            </View>
+            <Text style={styles.iconText}>Cab</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.iconButton}>
+            <View style={styles.preApprovedicon}>
+              <Ionicons name="cube-outline" size={30} color="#EAB308" />
+            </View>
+            <Text style={styles.iconText}>Delivery</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.iconButton}>
+            <View style={styles.preApprovedicon}>
+              <Ionicons name="repeat-outline" size={30} color="#EAB308" />
+            </View>
+            <Text style={styles.iconText}>Frequent</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.iconButton}>
+            <View style={styles.preApprovedicon}>
+              <MaterialIcons name="more" size={24} color="#EAB308" />
+            </View>
+            <Text style={styles.iconText}>Others</Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* On Arrival section */}
+
+        <View style={styles.sectionContainer}>
+          <Text style={styles.sectionTitle}>On Arrival</Text>
+          <TouchableOpacity style={styles.optionButton}>
+            <View style={styles.arrivalIcon}>
+              <Ionicons name="person-outline" size={24} color="#666" />
+            </View>
+            <Text style={styles.optionText}>Guest</Text>
+
+            <Ionicons
+              name="chevron-forward"
+              size={24}
+              color="#666"
+              style={styles.chevron}
+            />
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.optionButton}>
+            <View style={styles.arrivalIcon}>
+              <Ionicons name="car-outline" size={24} color="#666" />
+            </View>
+            <Text style={styles.optionText}>Cab Entry</Text>
+            <Ionicons
+              name="chevron-forward"
+              size={24}
+              color="#666"
+              style={styles.chevron}
+            />
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.optionButton}>
+            <View style={styles.arrivalIcon}>
+              <Ionicons name="cube-outline" size={24} color="#666" />
+            </View>
+            <Text style={styles.optionText}>Delivery</Text>
+            <Ionicons
+              name="chevron-forward"
+              size={24}
+              color="#666"
+              style={styles.chevron}
+            />
+          </TouchableOpacity>
+        </View>
+
+        {/* Alerts section */}
+        <View style={styles.sectionContainer}>
+          <Text style={styles.sectionTitle}>Alerts</Text>
+          <TouchableOpacity style={styles.optionButton}>
+            <View style={styles.alertIcon}>
+              <Ionicons name="alert-outline" size={24} color="#EF4444" />
+            </View>
+            <Text style={styles.optionText}>View Alerts</Text>
+            <Ionicons
+              name="chevron-forward"
+              size={24}
+              color="#666"
+              style={styles.chevron}
+            />
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
     </View>
-  )
+  );
 }
 
-
 const styles = StyleSheet.create({
-  container:{
-      flex:1,
-      backgroundColor:"#F7F3EB",
-      padding:20,
-      justifyContent:"center",
-      alignItems:"center",
+  container: {
+    flex: 1,
+    backgroundColor: "#FEFCE8",
+    marginTop: "20",
   },
-})
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#F7F3EB",
+    padding: 22,
+    justifyContent: "space-between",
+    paddingBottom: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: "#E0E0E0",
+    zIndex: 1000,
+  },
+
+  headerTextContainer: {
+    flex: 1,
+    marginLeft: 8,
+  },
+  name: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#333",
+  },
+  block: {
+    fontSize: 14,
+    color: "#666",
+  },
+  icon: {
+    marginLeft: "auto",
+    marginRight: 10,
+  },
+  preApprovedContainer: {
+    backgroundColor: "white",
+    padding: 20,
+    margin: 16,
+    borderRadius: 12,
+    elevation: 2,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    height: 200,
+  },
+  sectionLabel: {
+    fontSize: 19,
+    fontWeight: "bold",
+    marginBottom: 12,
+  },
+  codeContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 5,
+  },
+  digitBox: {
+    width: 40,
+    height: 50,
+    borderBottomWidth: 2,
+    borderColor: "#888282",
+    justifyContent: "center",
+    alignItems: "center",
+
+    fontWeight: "600",
+    textAlign: "center",
+    fontSize: 23,
+  },
+  digitBoxFilled: {
+    borderColor: "#EAB308",
+  },
+  digitBoxActive: {
+    borderColor: "#EAB308",
+    borderBottomWidth: 3,
+  },
+  verifyButton: {
+    backgroundColor: "#EAB308",
+    padding: 12,
+    borderRadius: 8,
+    alignItems: "center",
+    marginTop: 20,
+  },
+  verifyButtonDisabled: {
+    backgroundColor: "#D1D5DB",
+  },
+  verifyText: {
+    color: "white",
+    fontSize: 16,
+    fontWeight: "600",
+  },
+  verifyTextDisabled: {
+    color: "#9CA3AF",
+  },
+
+  verifyButton: {
+    backgroundColor: "#EAB308",
+    padding: 12,
+    borderRadius: 8,
+    alignItems: "center",
+    marginTop: 20,
+  },
+  verifyText: {
+    color: "white",
+    fontSize: 16,
+    fontWeight: "600",
+  },
+  iconsRow: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    paddingHorizontal: 16,
+    marginBottom: 24,
+    marginTop: 20,
+  },
+  iconButton: {
+    alignItems: "center",
+  },
+  preApprovedicon: {
+    backgroundColor: "#Fff",
+    padding: 8,
+    borderRadius: 50,
+  },
+  iconText: {
+    marginTop: 4,
+    fontSize: 12,
+    color: "#666",
+  },
+  sectionContainer: {
+    padding: 16,
+  },
+  sectionTitle: {
+    fontSize: 19,
+    fontWeight: "bold",
+    marginBottom: 12,
+  },
+  optionButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "white",
+    padding: 16,
+    borderRadius: 8,
+    marginBottom: 8,
+  },
+  optionText: {
+    flex: 1,
+    marginLeft: 12,
+    fontSize: 16,
+    color: "#333",
+  },
+  chevron: {
+    marginLeft: "auto",
+  },
+  alertIcon: {
+    backgroundColor: "#FEE2E2",
+    padding: 8,
+    borderRadius: 50,
+  },
+  arrivalIcon: {
+    backgroundColor: "#e5e5e5",
+    padding: 8,
+    borderRadius: 50,
+  },
+});

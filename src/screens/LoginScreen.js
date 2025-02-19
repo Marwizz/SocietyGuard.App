@@ -1,11 +1,11 @@
-import React, { useContext } from "react";
+import React, { useContext, useState } from "react";
 import {
   View,
   Text,
   TextInput,
   TouchableOpacity,
   StyleSheet,
-  Image,
+  Alert,
   Keyboard,
   TouchableWithoutFeedback,
   KeyboardAvoidingView,
@@ -15,16 +15,57 @@ import { AntDesign } from "@expo/vector-icons";
 import Svg, { Circle } from "react-native-svg";
 import { useNavigation } from "@react-navigation/native";
 import { GuardContext } from "../GuardContext";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { guardLogin } from "../services/operations/authApi";
 
 export default function LoginScreen() {
   const navigation = useNavigation();
-  const { setIsAuthenticated } = useContext(GuardContext);
+  const { setUser, setIsAuthenticated  } = useContext(GuardContext);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
-  
-  const handleLogin = () => {
-    setIsAuthenticated(true);
+  const resetFields = () => {
+    setEmail("");
+    setPassword("");
+    setIsLoading(false);
   };
 
+  const handleLogin = async () => {
+    if (!email.trim() || !password.trim()) {
+      Alert.alert("Error", "Please enter both email and password.");
+      return;
+    }
+  
+    setIsLoading(true);
+  
+    try {
+  
+      const response = await guardLogin(email, password);
+      console.log("Login Response:", response.data.data);
+      
+  
+      if (response?.data?.data) {
+        await AsyncStorage.setItem("userToken", response.data.token);
+        setUser(response.data.data);
+        setIsAuthenticated(true);
+        resetFields();
+        Alert.alert("Success", "Logged in successfully", [{ text: "OK"}]);
+      } else {
+        Alert.alert("Error", response?.data?.message || "Invalid credentials.");
+        setIsAuthenticated(false)
+      }
+    } catch (error) {
+      console.error("Login error:", error);
+  
+      let errorMessage = "Login failed. Please try again.";
+  
+      Alert.alert("Error", errorMessage);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
 
   return (
     <KeyboardAvoidingView
@@ -33,21 +74,18 @@ export default function LoginScreen() {
     >
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <View style={styles.container}>
-          {/* Background Spheres */}
           <Svg height="300" width="600" style={styles.backgroundSvg}>
             <Circle cx="180" cy="10" r="200" fill="#ffc600" opacity="0.2" />
             <Circle cx="350" cy="40" r="140" fill="#ffc600" opacity="0.3" />
           </Svg>
 
-          {/* Top Section */}
           <View style={styles.topSection}>
-            <TouchableOpacity style={styles.backArrow}>
+            <TouchableOpacity style={styles.backArrow} onPress={() => navigation.goBack()}>
               <AntDesign name="left" size={24} color="#000" />
             </TouchableOpacity>
             <Text style={styles.getStartedText}>Go Back</Text>
           </View>
 
-          {/* Logo Section */}
           <View style={styles.logoSection}>
             <Text style={styles.logoText}>
               Resi<Text style={styles.highlightText}>do </Text>
@@ -61,6 +99,11 @@ export default function LoginScreen() {
               placeholder="Enter your email here"
               placeholderTextColor="#ccc"
               style={styles.input}
+              value={email}
+              onChangeText={setEmail}
+              keyboardType="email-address"
+              autoCapitalize="none"
+              editable={!isLoading}
             />
 
             <Text style={styles.inputLabel}>Password*</Text>
@@ -69,13 +112,20 @@ export default function LoginScreen() {
               style={styles.input2}
               placeholderTextColor="#ccc"
               secureTextEntry={true}
+              value={password}
+              onChangeText={setPassword}
+              editable={!isLoading}
             />
 
-            <TouchableOpacity style={styles.submitButton} onPress={handleLogin}>
-              <Text style={styles.submitButtonText}>Login</Text>
+            <TouchableOpacity 
+              style={[styles.submitButton, isLoading && styles.submitButtonDisabled]}
+              onPress={handleLogin}
+              disabled={isLoading}
+            >
+              <Text style={styles.submitButtonText}>
+                {isLoading ? "Logging in..." : "Login"}
+              </Text>
             </TouchableOpacity>
-
-            
           </View>
         </View>
       </TouchableWithoutFeedback>
@@ -158,14 +208,6 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     color: "#000",
   },
-  orText: {
-    fontSize: 16,
-    fontFamily: "Outfit",
-    color: "#000",
-    textAlign: "center",
-    marginVertical: 10,
-    fontWeight: "bold",
-  },
   submitButton: {
     backgroundColor: "#ffc600",
     borderRadius: 8,
@@ -179,24 +221,7 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     fontFamily: "Outfit",
   },
-  dividerContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginVertical: 20,
+  submitButtonDisabled: {
+    opacity: 0.7,
   },
-  divider: {
-    flex: 1,
-    height: 1,
-    backgroundColor: "#ccc",
-  },
-  orSignUpText: {
-    marginHorizontal: 10,
-    fontSize: 16,
-    fontFamily: "Outfit",
-    color: "#000",
-  },
-  googleButton: {
-    alignItems: "center",
-    marginVertical: 10,
-  }
 });
