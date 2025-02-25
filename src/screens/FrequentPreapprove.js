@@ -99,8 +99,8 @@ export default function FrequentPreapprove({ route }) {
           <View key={visitor.id} style={styles.visitorCard}>
             <View style={styles.visitorInfo}>
               <Text style={styles.visitorName}>{visitor.name}</Text>
-              <Text style={styles.visitorPhone}>{visitor.phone}</Text>
-              <Text style={styles.visitorType}>{visitor.type}</Text>
+              <Text style={styles.visitorPhone}>Mobile number: {visitor.phone}</Text>
+              <Text style={styles.visitorType}>Purpose: {visitor.type}</Text>
             </View>
             <TouchableOpacity
               style={styles.verifyButton}

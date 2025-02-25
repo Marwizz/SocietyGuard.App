@@ -120,13 +120,13 @@ export default function HomeScreen() {
           <Text style={styles.name}>{user?.memberName || "Ramu"}</Text>
           <Text style={styles.block}>{user?.HouseId?.Name || "Main Gate"}</Text>
         </View>
-
+{/* 
         <Ionicons
           name="search-outline"
           size={24}
           color="#333"
           style={styles.icon}
-        />
+        /> */}
         <Ionicons
           name="notifications-outline"
           size={24}

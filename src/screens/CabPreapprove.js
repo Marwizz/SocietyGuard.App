@@ -1,35 +1,99 @@
-import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, ScrollView } from 'react-native';
-import React, { useState } from 'react';
-import { useNavigation } from '@react-navigation/native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  SafeAreaView,
+  TouchableOpacity,
+  ScrollView,
+  Alert,
+} from "react-native";
+import React, { useEffect, useState } from "react";
+import { useNavigation } from "@react-navigation/native";
 import { FontAwesome, Ionicons } from "@expo/vector-icons";
+import {
+  getAllCabInvite,
+  verifyCabInvite,
+} from "../services/operations/preApproveApi";
 
-
-export default function CabPreapprove() {
+export default function CabPreapprove({ route }) {
+  const { societyId } = route.params;
   const navigation = useNavigation();
   const [selectedCab, setSelectedCab] = useState(null);
+  const [deliveryData, setDeliveryData] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const cabCompanies = [
-    { id: 0, name: 'Uber', houseId: 'A-105', vehicleNumber: '6789' },
-    { id: 1, name: 'Ola', houseId: 'C-202', vehicleNumber: '4532' },
-    { id: 2, name: 'Rapido', houseId: 'B-408', vehicleNumber: '9087' },
-    { id: 3, name: 'Meru', houseId: 'D-205', vehicleNumber: '3421' },
-    { id: 4, name: 'BluSmart', houseId: 'A-101', vehicleNumber: '7654' },
-  ];
+  const fetchCabData = async () => {
+    try {
+      const response = await getAllCabInvite(societyId);
+      console.log("getAllCabInvite API RESPONSE:", response.data.data);
 
-  const handleCabSelect = (cab) => {
-    setSelectedCab(cab.id);
-    console.log('Selected cab:', cab.name);
-  };
-
-  const handleVerifyEntry = () => {
-    if (selectedCab !== null) {
-      console.log('Verify entry for:', cabCompanies.find(c => c.id === selectedCab));
+      if (response?.data) {
+        setDeliveryData(response.data.data);
+      }
+    } catch (error) {
+      console.error("getAllCabInvite API ERROR:", error);
+      Alert.alert("Error", "Failed to fetch delivery data. Please try again.", [
+        { text: "OK" },
+      ]);
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const handleVerifyExit = () => {
+  useEffect(() => {
+    fetchCabData();
+  }, [societyId]);
+
+  const handleCabSelect = (cab) => {
+    setSelectedCab(cab._id);
+    console.log("Selected cab:", cab.name);
+  };
+
+  const handleVerifyEntry = async () => {
     if (selectedCab !== null) {
-      console.log('Verify exit for:', cabCompanies.find(c => c.id === selectedCab));
+      try {
+        setIsLoading(true);
+        const response = await verifyCabInvite(selectedCab, {
+          action: "entry",
+        });
+
+        console.log("Verify entry response:", response);
+
+        if (response?.data) {
+          Alert.alert("Success", "Entry verified successfully", [
+            { text: "OK", onPress: () => fetchCabData() },
+          ]);
+        }
+      } catch (error) {
+        console.error("Verify Entry Error:", error);
+        Alert.alert("Error", "Failed to verify entry. Please try again.");
+      } finally {
+        setIsLoading(false);
+      }
+    }
+  };
+
+  const handleVerifyExit = async () => {
+    if (selectedCab !== null) {
+      try {
+        setIsLoading(true);
+        const response = await verifyCabInvite(selectedCab, {
+          action: "exit",
+        });
+
+        console.log("Verify exit response:", response);
+
+        if (response?.data) {
+          Alert.alert("Success", "Exit verified successfully", [
+            { text: "OK", onPress: () => fetchCabData() },
+          ]);
+        }
+      } catch (error) {
+        console.error("Verify Exit Error:", error);
+        Alert.alert("Error", "Failed to verify exit. Please try again.");
+      } finally {
+        setIsLoading(false);
+      }
     }
   };
 
@@ -37,11 +101,14 @@ export default function CabPreapprove() {
     <SafeAreaView style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.backButton}
           onPress={() => navigation.goBack()}
         >
-          <Text style={styles.backButtonText}> <Ionicons name="chevron-back" size={24} color="black" /></Text>
+          <Text style={styles.backButtonText}>
+            {" "}
+            <Ionicons name="chevron-back" size={24} color="black" />
+          </Text>
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Cab Verification</Text>
       </View>
@@ -50,67 +117,79 @@ export default function CabPreapprove() {
       <View style={styles.content}>
         {/* Table Header */}
         <View style={styles.tableHeader}>
-          <Text style={styles.columnHeader}>Company</Text>
-          <Text style={[styles.columnHeader, styles.centerText]}>Vehicle #</Text>
+          <Text style={styles.columnHeader}>Company Name</Text>
+          <Text style={[styles.columnHeader, styles.centerText]}>
+            Vehicle #
+          </Text>
           <Text style={[styles.columnHeader, styles.rightText]}>House ID</Text>
         </View>
 
         {/* Cab List */}
         <ScrollView style={styles.scrollView}>
-          {cabCompanies.map((cab) => (
-            <TouchableOpacity
-              key={cab.id}
-              style={[
-                styles.cabRow,
-                selectedCab === cab.id && styles.selectedRow
-              ]}
-              onPress={() => handleCabSelect(cab)}
-              activeOpacity={0.7}
-            >
-              <Text style={[
-                styles.companyName,
-                selectedCab === cab.id && styles.selectedText,
-                styles.flex1
-              ]}>
-                {cab.name}
-              </Text>
-              <Text style={[
-                styles.vehicleNumber,
-                selectedCab === cab.id && styles.selectedText,
-                styles.flex1,
-                styles.centerText
-              ]}>
-                {cab.vehicleNumber}
-              </Text>
-              <Text style={[
-                styles.houseId,
-                selectedCab === cab.id && styles.selectedText,
-                styles.flex1,
-                styles.rightText
-              ]}>
-                {cab.houseId}
-              </Text>
-            </TouchableOpacity>
-          ))}
+          {isLoading ? (
+            <Text style={styles.loadingText}>Loading deliveries...</Text>
+          ) : !Array.isArray(deliveryData) || deliveryData.length === 0 ? (
+            <Text style={styles.noDataText}>No cab deliveries found</Text>
+          ) : (
+            deliveryData.map((cab) => (
+              <TouchableOpacity
+                key={cab._id}
+                style={[
+                  styles.cabRow,
+                  selectedCab === cab._id && styles.selectedRow,
+                ]}
+                onPress={() => handleCabSelect(cab)}
+                activeOpacity={0.7}
+              >
+                <Text
+                  style={[
+                    styles.cabName,
+                    selectedCab === cab._id && styles.selectedText,
+                
+                  ]}
+                >
+                  {cab.companyName}
+                </Text>
+                <Text
+                  style={[
+                    styles.vehicleNumber,
+                    selectedCab === cab._id && styles.selectedText,
+                    styles.flex1,
+                    styles.centerText,
+                  ]}
+                >
+                  {cab.vehicleNumber}
+                </Text>
+                <Text
+                  style={[
+                    styles.houseId,
+                    selectedCab === cab._id && styles.selectedText,
+                  ]}
+                >
+                  {cab.houseId.Name}
+                </Text>
+              </TouchableOpacity>
+            ))
+          )}
         </ScrollView>
 
         {/* Verification Buttons */}
         <View style={styles.buttonContainer}>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={[
               styles.verifyEntryButton,
-              selectedCab === null && styles.disabledButton
+              selectedCab === null && styles.disabledButton,
             ]}
             onPress={handleVerifyEntry}
             disabled={selectedCab === null}
           >
             <Text style={styles.buttonText}>Verify Entry</Text>
           </TouchableOpacity>
-          
-          <TouchableOpacity 
+
+          <TouchableOpacity
             style={[
               styles.verifyExitButton,
-              selectedCab === null && styles.disabledButton
+              selectedCab === null && styles.disabledButton,
             ]}
             onPress={handleVerifyExit}
             disabled={selectedCab === null}

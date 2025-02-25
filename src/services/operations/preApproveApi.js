@@ -7,7 +7,10 @@ const {
   addGuest_API,
   getAllDeliveries_API,
   getAllCabInvite_API,
-  verifyDeliveryInvite_API, frequentInvite_API, recordVisit_API
+  verifyDeliveryInvite_API,
+  verifyCabInvite_API,
+  frequentInvite_API,
+  recordVisit_API, otherVisitor_API, verifyOtherVisitor_API
 } = preapproveendpoint;
 
 export async function verifyVisitorOTP(otpData) {
@@ -34,6 +37,24 @@ export async function groupVisitorOTP(societyId) {
     return response;
   } catch (error) {
     console.log("group_API ERROR:", error);
+    throw error;
+  }
+}
+
+export async function otherVisitor(societyId) {
+  try {
+    if (!societyId) {
+      throw new Error("societyId is required");
+    }
+
+    const url = `${otherVisitor_API}/${societyId}`;
+    console.log("url is ", url);
+
+    const response = await apiConnector("GET", url);
+    console.log("otherVisitor_API VISITOR OTP RESPONSE:", response);
+    return response;
+  } catch (error) {
+    console.log("otherVisitor_API ERROR:", error);
     throw error;
   }
 }
@@ -75,7 +96,44 @@ export async function verifyDeliveryInvite(entryId, actionData) {
     throw error;
   }
 }
+export async function verifyCabInvite(entryId, actionData) {
+  try {
+    if (!entryId) {
+      throw new Error("entryId is required");
+    }
 
+    const url = `${verifyCabInvite_API}/${entryId}/verify`;
+    console.log("url is ", url);
+
+    const response = await apiConnector("POST", url, actionData);
+
+    console.log("verifyCabInvite_API  RESPONSE:", response);
+    return response;
+  } catch (error) {
+    console.error("verifyCabInvite_API  ERROR:", error);
+    throw error;
+  }
+}
+export async function verifyOtherVisitor(guestId) {
+  try {
+    if (!guestId) {
+      throw new Error("guestid is required");
+    }
+
+    const url = `${verifyOtherVisitor_API}`;
+    console.log("url is ", url);
+
+    const response = await apiConnector("POST", `${url}/${guestId}`, {
+      params: guestId,
+    });
+
+    console.log("verifyOtherVisitor_API  RESPONSE:", response);
+    return response;
+  } catch (error) {
+    console.error("verifyOtherVisitor_API  ERROR:", error);
+    throw error;
+  }
+}
 
 export async function recordVisit(inviteId) {
   try {
@@ -86,7 +144,9 @@ export async function recordVisit(inviteId) {
     const url = `${recordVisit_API}`;
     console.log("url is", `${url}/${inviteId}`);
 
-    const response = await apiConnector("POST", `${url}/${inviteId}`, { params: inviteId });
+    const response = await apiConnector("POST", `${url}/${inviteId}`, {
+      params: inviteId,
+    });
 
     console.log("recordVisit_API  RESPONSE:", response);
     return response;
@@ -129,18 +189,18 @@ export async function getAllCabInvite(societyId) {
   }
 }
 export async function getFrequentInvites(societyId) {
-    try {
-      if (!societyId) {
-        throw new Error("societyId is required");
-      }
-  
-      const url = `${frequentInvite_API}/${societyId}`;
-  
-      const response = await apiConnector("GET", url);
-      console.log("frequentInvite_API RESPONSE:", response);
-      return response;
-    } catch (error) {
-      console.log("frequentInvite_API ERROR:", error);
-      throw error;
+  try {
+    if (!societyId) {
+      throw new Error("societyId is required");
     }
+
+    const url = `${frequentInvite_API}/${societyId}`;
+
+    const response = await apiConnector("GET", url);
+    console.log("frequentInvite_API RESPONSE:", response);
+    return response;
+  } catch (error) {
+    console.log("frequentInvite_API ERROR:", error);
+    throw error;
   }
+}

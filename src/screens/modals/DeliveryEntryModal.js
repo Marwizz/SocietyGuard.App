@@ -135,7 +135,7 @@ const DeliveryEntryModal = ({ visible, onClose, onSubmit, societyId }) => {
       <View style={styles.centeredView}>
         <View style={styles.modalView}>
           <View style={styles.modalHeader}>
-            <Text style={styles.modalTitle}>Cab Entry</Text>
+            <Text style={styles.modalTitle}>Delivery Entry</Text>
             <Pressable onPress={onClose}>
               <Ionicons name="close" size={24} color="#666" />
             </Pressable>
