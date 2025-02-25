@@ -13,6 +13,10 @@ import { ScrollView } from "react-native-gesture-handler";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { verifyVisitorOTP } from "../services/operations/preApproveApi";
 import { useNavigation } from "@react-navigation/native";
+import GuestEntryModal from "./modals/GuestEntryModal";
+import CabEntryModal from "./modals/CabEntryModal";
+import DeliveryEntryModal from "./modals/DeliveryEntryModal";
+
 
 export default function HomeScreen() {
   const { user } = useContext(GuardContext);
@@ -20,6 +24,9 @@ export default function HomeScreen() {
   const [isLoading, setIsLoading] = useState(false);
   const inputRefs = useRef([]);
   const navigation = useNavigation();
+  const [isGuestModalVisible, setIsGuestModalVisible] = useState(false);
+  const [isCabModalVisible, setIsCabModalVisible] = useState(false);
+  const [isDeliveryModalVisible, setIsDeliveryModalVisible] = useState(false);
 
   // Initialize refs array
   React.useEffect(() => {
@@ -113,13 +120,13 @@ export default function HomeScreen() {
           <Text style={styles.name}>{user?.memberName || "Ramu"}</Text>
           <Text style={styles.block}>{user?.HouseId?.Name || "Main Gate"}</Text>
         </View>
-
+{/* 
         <Ionicons
           name="search-outline"
           size={24}
           color="#333"
           style={styles.icon}
-        />
+        /> */}
         <Ionicons
           name="notifications-outline"
           size={24}
@@ -185,25 +192,53 @@ export default function HomeScreen() {
             </View>
             <Text style={styles.iconText}>Group</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.iconButton}>
+          <TouchableOpacity
+            style={styles.iconButton}
+            onPress={() =>
+              navigation.navigate("CabPreapprove", {
+                societyId: user?.SocietyId,
+              })
+            }
+          >
             <View style={styles.preApprovedicon}>
               <Ionicons name="car-outline" size={30} color="#EAB308" />
             </View>
             <Text style={styles.iconText}>Cab</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.iconButton}>
+          <TouchableOpacity
+            style={styles.iconButton}
+            onPress={() =>
+              navigation.navigate("DeliveryPreapprove", {
+                societyId: user?.SocietyId,
+              })
+            }
+          >
             <View style={styles.preApprovedicon}>
               <Ionicons name="cube-outline" size={30} color="#EAB308" />
             </View>
             <Text style={styles.iconText}>Delivery</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.iconButton}>
+          <TouchableOpacity
+            style={styles.iconButton}
+            onPress={() =>
+              navigation.navigate("FrequentPreapprove", {
+                societyId: user?.SocietyId,
+              })
+            }
+          >
             <View style={styles.preApprovedicon}>
               <Ionicons name="repeat-outline" size={30} color="#EAB308" />
             </View>
             <Text style={styles.iconText}>Frequent</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.iconButton}>
+          <TouchableOpacity
+            style={styles.iconButton}
+            onPress={() =>
+              navigation.navigate("OtherVisitors", {
+                societyId: user?.SocietyId,
+              })
+            }
+          >
             <View style={styles.preApprovedicon}>
               <MaterialIcons name="more" size={24} color="#EAB308" />
             </View>
@@ -215,7 +250,10 @@ export default function HomeScreen() {
 
         <View style={styles.sectionContainer}>
           <Text style={styles.sectionTitle}>On Arrival</Text>
-          <TouchableOpacity style={styles.optionButton}>
+          <TouchableOpacity
+            style={styles.optionButton}
+            onPress={() => setIsGuestModalVisible(true)}
+          >
             <View style={styles.arrivalIcon}>
               <Ionicons name="person-outline" size={24} color="#666" />
             </View>
@@ -228,7 +266,10 @@ export default function HomeScreen() {
               style={styles.chevron}
             />
           </TouchableOpacity>
-          <TouchableOpacity style={styles.optionButton}>
+          <TouchableOpacity
+            style={styles.optionButton}
+            onPress={() => setIsCabModalVisible(true)}
+          >
             <View style={styles.arrivalIcon}>
               <Ionicons name="car-outline" size={24} color="#666" />
             </View>
@@ -240,7 +281,7 @@ export default function HomeScreen() {
               style={styles.chevron}
             />
           </TouchableOpacity>
-          <TouchableOpacity style={styles.optionButton}>
+          <TouchableOpacity style={styles.optionButton}  onPress={() => setIsDeliveryModalVisible(true)}>
             <View style={styles.arrivalIcon}>
               <Ionicons name="cube-outline" size={24} color="#666" />
             </View>
@@ -253,6 +294,35 @@ export default function HomeScreen() {
             />
           </TouchableOpacity>
         </View>
+        {/* Modals */}
+
+        <GuestEntryModal
+          visible={isGuestModalVisible}
+          onClose={() => setIsGuestModalVisible(false)}
+          societyId={user?.SocietyId}
+          onSubmit={(guestData) => {
+            // Handle the guest entry data here
+            console.log(guestData);
+          }}
+        />
+        <CabEntryModal
+          visible={isCabModalVisible}
+          onClose={() => setIsCabModalVisible(false)}
+          societyId={user?.SocietyId}
+          onSubmit={(guestData) => {
+            // Handle the guest entry data here
+            console.log(guestData);
+          }}
+        />
+        <DeliveryEntryModal
+          visible={isDeliveryModalVisible}
+          onClose={() => setIsDeliveryModalVisible(false)}
+          societyId={user?.SocietyId}
+          onSubmit={(guestData) => {
+            // Handle the guest entry data here
+            console.log(guestData);
+          }}
+        />
 
         {/* Alerts section */}
         <View style={styles.sectionContainer}>
