@@ -17,6 +17,8 @@ export default function DeliveryPreapprove({ route }) {
   const [selectedCompany, setSelectedCompany] = useState(null);
   const [deliveryData, setDeliveryData] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+    const [recipientid, setRecipientid] = useState(null);
+  
 
   const fetchDeliveryData = async () => {
     try {
@@ -25,6 +27,7 @@ export default function DeliveryPreapprove({ route }) {
 
       if (response?.data) {
         setDeliveryData(response.data.data);
+        
       }
     } catch (error) {
       console.error("getAllDeliveries API ERROR:", error);
@@ -42,6 +45,7 @@ export default function DeliveryPreapprove({ route }) {
 
   const handleCompanySelect = (company) => {
     setSelectedCompany(company._id);
+    setRecipientid(company.userId._id);
     console.log('Selected company:', company.companyName);
   };
 
@@ -51,7 +55,8 @@ export default function DeliveryPreapprove({ route }) {
       try {
         setIsLoading(true);
         const response = await verifyDeliveryInvite(selectedCompany, {
-          action: "entry"
+          action: "entry",
+          recipientid: recipientid,
         });
         
         console.log("Verify entry response:", response);

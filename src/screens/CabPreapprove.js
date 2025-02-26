@@ -21,6 +21,7 @@ export default function CabPreapprove({ route }) {
   const [selectedCab, setSelectedCab] = useState(null);
   const [deliveryData, setDeliveryData] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [recipientid, setRecipientid] = useState(null);
 
   const fetchCabData = async () => {
     try {
@@ -46,15 +47,17 @@ export default function CabPreapprove({ route }) {
 
   const handleCabSelect = (cab) => {
     setSelectedCab(cab._id);
-    console.log("Selected cab:", cab.name);
+    setRecipientid(cab.userId._id);
+    console.log("Selected cab:", cab.userId._id);
   };
 
   const handleVerifyEntry = async () => {
     if (selectedCab !== null) {
       try {
         setIsLoading(true);
-        const response = await verifyCabInvite(selectedCab, {
+        const response = await verifyCabInvite(selectedCab,{
           action: "entry",
+          recipientid: recipientid,
         });
 
         console.log("Verify entry response:", response);

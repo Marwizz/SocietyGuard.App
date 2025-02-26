@@ -5,6 +5,7 @@ import {
   TouchableOpacity,
   TextInput,
   Alert,
+  Dimensions,
 } from "react-native";
 import React, { useContext, useState, useRef, useEffect } from "react";
 import { Ionicons } from "@expo/vector-icons";
@@ -17,7 +18,6 @@ import GuestEntryModal from "./modals/GuestEntryModal";
 import CabEntryModal from "./modals/CabEntryModal";
 import DeliveryEntryModal from "./modals/DeliveryEntryModal";
 
-
 export default function HomeScreen() {
   const { user } = useContext(GuardContext);
   const [code, setCode] = useState(["", "", "", "", "", ""]);
@@ -27,6 +27,28 @@ export default function HomeScreen() {
   const [isGuestModalVisible, setIsGuestModalVisible] = useState(false);
   const [isCabModalVisible, setIsCabModalVisible] = useState(false);
   const [isDeliveryModalVisible, setIsDeliveryModalVisible] = useState(false);
+  const windowWidth = Dimensions.get("window").width;
+
+  // Calculate the width to show exactly 4 icons
+  const containerWidth = windowWidth - 32; // Subtract padding
+  const iconWidth = containerWidth / 4; // Show 4 icons at once
+
+  const [showRightIndicator, setShowRightIndicator] = useState(true);
+  const [showLeftIndicator, setShowLeftIndicator] = useState(false);
+  const scrollViewRef = useRef(null);
+  
+  // Handle scroll events to update indicators
+  const handleScroll = (event) => {
+    const contentOffsetX = event.nativeEvent.contentOffset.x;
+    const contentWidth = event.nativeEvent.contentSize.width;
+    const layoutWidth = event.nativeEvent.layoutMeasurement.width;
+    
+    // Show left indicator if we've scrolled right
+    setShowLeftIndicator(contentOffsetX > 10);
+    
+    // Show right indicator if we haven't reached the end
+    setShowRightIndicator(contentOffsetX < contentWidth - layoutWidth - 10);
+  };
 
   // Initialize refs array
   React.useEffect(() => {
@@ -120,7 +142,7 @@ export default function HomeScreen() {
           <Text style={styles.name}>{user?.memberName || "Ramu"}</Text>
           <Text style={styles.block}>{user?.HouseId?.Name || "Main Gate"}</Text>
         </View>
-{/* 
+        {/* 
         <Ionicons
           name="search-outline"
           size={24}
@@ -178,73 +200,100 @@ export default function HomeScreen() {
 
       {/* Icons row */}
       <ScrollView>
-        <View style={styles.iconsRow}>
-          <TouchableOpacity
-            style={styles.iconButton}
-            onPress={() =>
-              navigation.navigate("GroupPreapprove", {
-                societyId: user?.SocietyId,
-              })
-            }
-          >
-            <View style={styles.preApprovedicon}>
-              <Ionicons name="people-outline" size={30} color="#EAB308" />
-            </View>
-            <Text style={styles.iconText}>Group</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.iconButton}
-            onPress={() =>
-              navigation.navigate("CabPreapprove", {
-                societyId: user?.SocietyId,
-              })
-            }
-          >
-            <View style={styles.preApprovedicon}>
-              <Ionicons name="car-outline" size={30} color="#EAB308" />
-            </View>
-            <Text style={styles.iconText}>Cab</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.iconButton}
-            onPress={() =>
-              navigation.navigate("DeliveryPreapprove", {
-                societyId: user?.SocietyId,
-              })
-            }
-          >
-            <View style={styles.preApprovedicon}>
-              <Ionicons name="cube-outline" size={30} color="#EAB308" />
-            </View>
-            <Text style={styles.iconText}>Delivery</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.iconButton}
-            onPress={() =>
-              navigation.navigate("FrequentPreapprove", {
-                societyId: user?.SocietyId,
-              })
-            }
-          >
-            <View style={styles.preApprovedicon}>
-              <Ionicons name="repeat-outline" size={30} color="#EAB308" />
-            </View>
-            <Text style={styles.iconText}>Frequent</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.iconButton}
-            onPress={() =>
-              navigation.navigate("OtherVisitors", {
-                societyId: user?.SocietyId,
-              })
-            }
-          >
-            <View style={styles.preApprovedicon}>
-              <MaterialIcons name="more" size={24} color="#EAB308" />
-            </View>
-            <Text style={styles.iconText}>Others</Text>
-          </TouchableOpacity>
+      <View style={styles.iconsRowContainer}>
+      {/* Left scroll indicator */}
+      {showLeftIndicator && (
+        <View style={[styles.scrollIndicator, styles.leftIndicator]}>
+          <Ionicons name="chevron-back" size={20} color="#666" />
         </View>
+      )}
+      
+      <ScrollView 
+        ref={scrollViewRef}
+        horizontal={true}
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContent}
+        onScroll={handleScroll}
+        scrollEventThrottle={16}
+      >
+        <TouchableOpacity
+          style={[styles.iconButton, { width: iconWidth }]}
+          onPress={() =>
+            navigation.navigate("GroupPreapprove", {
+              societyId: user?.SocietyId,
+            })
+          }
+        >
+          <View style={styles.preApprovedIcon}>
+            <Ionicons name="people-outline" size={30} color="#EAB308" />
+          </View>
+          <Text style={styles.iconText}>Group</Text>
+        </TouchableOpacity>
+        
+        <TouchableOpacity
+          style={[styles.iconButton, { width: iconWidth }]}
+          onPress={() =>
+            navigation.navigate("CabPreapprove", {
+              societyId: user?.SocietyId,
+            })
+          }
+        >
+          <View style={styles.preApprovedIcon}>
+            <Ionicons name="car-outline" size={30} color="#EAB308" />
+          </View>
+          <Text style={styles.iconText}>Cab</Text>
+        </TouchableOpacity>
+        
+        <TouchableOpacity
+          style={[styles.iconButton, { width: iconWidth }]}
+          onPress={() =>
+            navigation.navigate("DeliveryPreapprove", {
+              societyId: user?.SocietyId,
+            })
+          }
+        >
+          <View style={styles.preApprovedIcon}>
+            <Ionicons name="cube-outline" size={30} color="#EAB308" />
+          </View>
+          <Text style={styles.iconText}>Delivery</Text>
+        </TouchableOpacity>
+        
+        <TouchableOpacity
+          style={[styles.iconButton, { width: iconWidth }]}
+          onPress={() =>
+            navigation.navigate("FrequentPreapprove", {
+              societyId: user?.SocietyId,
+            })
+          }
+        >
+          <View style={styles.preApprovedIcon}>
+            <Ionicons name="repeat-outline" size={30} color="#EAB308" />
+          </View>
+          <Text style={styles.iconText}>Frequent</Text>
+        </TouchableOpacity>
+        
+        <TouchableOpacity
+          style={[styles.iconButton, { width: iconWidth }]}
+          onPress={() =>
+            navigation.navigate("OtherVisitors", {
+              societyId: user?.SocietyId,
+            })
+          }
+        >
+          <View style={styles.preApprovedIcon}>
+            <MaterialIcons name="more" size={24} color="#EAB308" />
+          </View>
+          <Text style={styles.iconText}>Others</Text>
+        </TouchableOpacity>
+      </ScrollView>
+      
+      {/* Right scroll indicator */}
+      {showRightIndicator && (
+        <View style={[styles.scrollIndicator, styles.rightIndicator]}>
+          <Ionicons name="chevron-forward" size={20} color="#666" />
+        </View>
+      )}
+    </View>
 
         {/* On Arrival section */}
 
@@ -281,7 +330,10 @@ export default function HomeScreen() {
               style={styles.chevron}
             />
           </TouchableOpacity>
-          <TouchableOpacity style={styles.optionButton}  onPress={() => setIsDeliveryModalVisible(true)}>
+          <TouchableOpacity
+            style={styles.optionButton}
+            onPress={() => setIsDeliveryModalVisible(true)}
+          >
             <View style={styles.arrivalIcon}>
               <Ionicons name="cube-outline" size={24} color="#666" />
             </View>
@@ -452,25 +504,57 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "600",
   },
-  iconsRow: {
-    flexDirection: "row",
-    justifyContent: "space-around",
+  iconsRowContainer: {
+    marginVertical: 20,
     paddingHorizontal: 16,
-    marginBottom: 24,
-    marginTop: 20,
+    position: 'relative',
+  },
+  scrollContent: {
+    alignItems: 'center',
+    paddingHorizontal: 5,
   },
   iconButton: {
-    alignItems: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 8,
   },
-  preApprovedicon: {
+  preApprovedIcon: {
     backgroundColor: "#Fff",
     padding: 8,
     borderRadius: 50,
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: 46,
+    height: 46,
   },
   iconText: {
     marginTop: 4,
     fontSize: 12,
     color: "#666",
+    textAlign: 'center',
+  },
+  scrollIndicator: {
+    position: 'absolute',
+    top: '-5%',
+    transform: [{ translateY: -15 }],
+    // backgroundColor: 'rgba(255, 255, 255, 0.8)',
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 10,
+    // shadowColor: '#000',
+    // shadowOffset: { width: 0, height: 1 },
+    // shadowOpacity: 0.22,
+    // shadowRadius: 2.22,
+    // elevation: 3,
+  },
+  leftIndicator: {
+    left: 16,
+  },
+  rightIndicator: {
+    right: 16,
   },
   sectionContainer: {
     padding: 16,
