@@ -82,7 +82,12 @@ function GuestTabScreen({ societyId, refreshing, onRefresh, isLoading }) {
               </Text>
             </View>
             <TouchableOpacity
-              style={styles.verifyButton}
+             style={[
+              styles.verifyButton,
+              visitor.Status === "Approved"
+                ? { backgroundColor: "rgb(106, 227, 146)" }
+                : "#ffc107",
+            ]}
               onPress={() => handleVerify(visitor)}
             >
               <Text style={styles.verifyButtonText}>
@@ -160,7 +165,12 @@ function CabTabScreen({ societyId, refreshing, onRefresh, isLoading }) {
               </Text>
             </View>
             <TouchableOpacity
-              style={styles.verifyButton}
+              style={[
+                styles.verifyButton,
+                visitor.approvalStatus === "Approved"
+                  ? { backgroundColor: "rgb(106, 227, 146)" }
+                  : "#ffc107",
+              ]}
               onPress={() => handleVerify(visitor)}
             >
               <Text style={styles.verifyButtonText}>
@@ -234,7 +244,12 @@ function DeliveryTabScreen({ societyId, refreshing, onRefresh, isLoading }) {
              
             </View>
             <TouchableOpacity
-              style={styles.verifyButton}
+              style={[
+                styles.verifyButton,
+                visitor.approvalStatus === "Approved"
+                  ? { backgroundColor: "rgb(106, 227, 146)" }
+                  : "#ffc107",
+              ]}
               onPress={() => handleVerify(visitor)}
             >
               <Text style={styles.verifyButtonText}>

@@ -12,17 +12,14 @@ import { Ionicons } from "@expo/vector-icons";
 import { GuardContext } from "../GuardContext";
 import { ScrollView } from "react-native-gesture-handler";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import { verifyVisitorOTP } from "../services/operations/preApproveApi";
 import { useNavigation } from "@react-navigation/native";
 import GuestEntryModal from "./modals/GuestEntryModal";
 import CabEntryModal from "./modals/CabEntryModal";
 import DeliveryEntryModal from "./modals/DeliveryEntryModal";
+import PreApprovedOtp from "./PreApprovedOtp";
 
 export default function HomeScreen() {
   const { user } = useContext(GuardContext);
-  const [code, setCode] = useState(["", "", "", "", "", ""]);
-  const [isLoading, setIsLoading] = useState(false);
-  const inputRefs = useRef([]);
   const navigation = useNavigation();
   const [isGuestModalVisible, setIsGuestModalVisible] = useState(false);
   const [isCabModalVisible, setIsCabModalVisible] = useState(false);
@@ -36,92 +33,18 @@ export default function HomeScreen() {
   const [showRightIndicator, setShowRightIndicator] = useState(true);
   const [showLeftIndicator, setShowLeftIndicator] = useState(false);
   const scrollViewRef = useRef(null);
-  
+
   // Handle scroll events to update indicators
   const handleScroll = (event) => {
     const contentOffsetX = event.nativeEvent.contentOffset.x;
     const contentWidth = event.nativeEvent.contentSize.width;
     const layoutWidth = event.nativeEvent.layoutMeasurement.width;
-    
+
     // Show left indicator if we've scrolled right
     setShowLeftIndicator(contentOffsetX > 10);
-    
+
     // Show right indicator if we haven't reached the end
     setShowRightIndicator(contentOffsetX < contentWidth - layoutWidth - 10);
-  };
-
-  // Initialize refs array
-  React.useEffect(() => {
-    inputRefs.current = inputRefs.current.slice(0, 6);
-  }, []);
-
-  const handleCodeChange = (text, index) => {
-    // Only allow numbers
-    if (!/^\d*$/.test(text)) return;
-
-    const newCode = [...code];
-    newCode[index] = text;
-    setCode(newCode);
-
-    // If a number is entered and there's a next input, focus it
-    if (text.length === 1 && index < 5) {
-      inputRefs.current[index + 1].focus();
-    }
-  };
-
-  const handleKeyPress = (e, index) => {
-    // Handle backspace
-    if (e.nativeEvent.key === "Backspace") {
-      // If current input is empty and there's a previous input, go back
-      if (code[index] === "" && index > 0) {
-        const newCode = [...code];
-        newCode[index - 1] = "";
-        setCode(newCode);
-        inputRefs.current[index - 1].focus();
-      } else {
-        // Clear current input
-        const newCode = [...code];
-        newCode[index] = "";
-        setCode(newCode);
-      }
-    }
-  };
-
-  const isVerifyDisabled = code.some((digit) => digit === "") || isLoading;
-
-  const handleVerify = async () => {
-    const verificationCode = code.join("");
-
-    if (verificationCode.length !== 6) {
-      Alert.alert("Error", "Please enter a valid 6-digit OTP");
-      return;
-    }
-
-    try {
-      setIsLoading(true);
-
-      const otpData = {
-        otp: verificationCode,
-      };
-
-      const response = await verifyVisitorOTP(otpData);
-      console.log(otpData);
-
-      resetFields();
-
-      Alert.alert("Success", "OTP verified successfully", [{ text: "OK" }]);
-    } catch (error) {
-      console.error(error);
-      Alert.alert("Error", "Failed to verify OTP. Please try again.", [
-        { text: "OK" },
-      ]);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const resetFields = () => {
-    setCode(["", "", "", "", "", ""]);
   };
 
   return (
@@ -156,144 +79,104 @@ export default function HomeScreen() {
           style={styles.icon}
         />
       </View>
-
-      <View style={styles.preApprovedContainer}>
-        <Text style={styles.sectionLabel}>Pre-approved</Text>
-        <View style={styles.codeContainer}>
-          {code.map((digit, index) => (
-            <TextInput
-              key={index}
-              ref={(ref) => (inputRefs.current[index] = ref)}
-              style={[
-                styles.digitBox,
-                digit && styles.digitBoxFilled,
-                index === code.findIndex((d) => d === "") &&
-                  styles.digitBoxActive,
-              ]}
-              value={digit}
-              onChangeText={(text) => handleCodeChange(text, index)}
-              onKeyPress={(e) => handleKeyPress(e, index)}
-              keyboardType="phone-pad"
-              maxLength={1}
-              selectTextOnFocus
-            />
-          ))}
-        </View>
-        <TouchableOpacity
-          style={[
-            styles.verifyButton,
-            isVerifyDisabled && styles.verifyButtonDisabled,
-          ]}
-          onPress={handleVerify}
-          disabled={isVerifyDisabled}
-        >
-          <Text
-            style={[
-              styles.verifyText,
-              isVerifyDisabled && styles.verifyTextDisabled,
-            ]}
-          >
-            Verify
-          </Text>
-        </TouchableOpacity>
-      </View>
+      <PreApprovedOtp />
 
       {/* Icons row */}
       <ScrollView>
-      <View style={styles.iconsRowContainer}>
-      {/* Left scroll indicator */}
-      {showLeftIndicator && (
-        <View style={[styles.scrollIndicator, styles.leftIndicator]}>
-          <Ionicons name="chevron-back" size={20} color="#666" />
+        <View style={styles.iconsRowContainer}>
+          {/* Left scroll indicator */}
+          {showLeftIndicator && (
+            <View style={[styles.scrollIndicator, styles.leftIndicator]}>
+              <Ionicons name="chevron-back" size={20} color="#666" />
+            </View>
+          )}
+
+          <ScrollView
+            ref={scrollViewRef}
+            horizontal={true}
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.scrollContent}
+            onScroll={handleScroll}
+            scrollEventThrottle={16}
+          >
+            <TouchableOpacity
+              style={[styles.iconButton, { width: iconWidth }]}
+              onPress={() =>
+                navigation.navigate("GroupPreapprove", {
+                  societyId: user?.SocietyId,
+                })
+              }
+            >
+              <View style={styles.preApprovedIcon}>
+                <Ionicons name="people-outline" size={30} color="#EAB308" />
+              </View>
+              <Text style={styles.iconText}>Group</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.iconButton, { width: iconWidth }]}
+              onPress={() =>
+                navigation.navigate("CabPreapprove", {
+                  societyId: user?.SocietyId,
+                })
+              }
+            >
+              <View style={styles.preApprovedIcon}>
+                <Ionicons name="car-outline" size={30} color="#EAB308" />
+              </View>
+              <Text style={styles.iconText}>Cab</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.iconButton, { width: iconWidth }]}
+              onPress={() =>
+                navigation.navigate("DeliveryPreapprove", {
+                  societyId: user?.SocietyId,
+                })
+              }
+            >
+              <View style={styles.preApprovedIcon}>
+                <Ionicons name="cube-outline" size={30} color="#EAB308" />
+              </View>
+              <Text style={styles.iconText}>Delivery</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.iconButton, { width: iconWidth }]}
+              onPress={() =>
+                navigation.navigate("FrequentPreapprove", {
+                  societyId: user?.SocietyId,
+                })
+              }
+            >
+              <View style={styles.preApprovedIcon}>
+                <Ionicons name="repeat-outline" size={30} color="#EAB308" />
+              </View>
+              <Text style={styles.iconText}>Frequent</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.iconButton, { width: iconWidth }]}
+              onPress={() =>
+                navigation.navigate("OtherVisitors", {
+                  societyId: user?.SocietyId,
+                })
+              }
+            >
+              <View style={styles.preApprovedIcon}>
+                <MaterialIcons name="more" size={24} color="#EAB308" />
+              </View>
+              <Text style={styles.iconText}>Others</Text>
+            </TouchableOpacity>
+          </ScrollView>
+
+          {/* Right scroll indicator */}
+          {showRightIndicator && (
+            <View style={[styles.scrollIndicator, styles.rightIndicator]}>
+              <Ionicons name="chevron-forward" size={20} color="#666" />
+            </View>
+          )}
         </View>
-      )}
-      
-      <ScrollView 
-        ref={scrollViewRef}
-        horizontal={true}
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.scrollContent}
-        onScroll={handleScroll}
-        scrollEventThrottle={16}
-      >
-        <TouchableOpacity
-          style={[styles.iconButton, { width: iconWidth }]}
-          onPress={() =>
-            navigation.navigate("GroupPreapprove", {
-              societyId: user?.SocietyId,
-            })
-          }
-        >
-          <View style={styles.preApprovedIcon}>
-            <Ionicons name="people-outline" size={30} color="#EAB308" />
-          </View>
-          <Text style={styles.iconText}>Group</Text>
-        </TouchableOpacity>
-        
-        <TouchableOpacity
-          style={[styles.iconButton, { width: iconWidth }]}
-          onPress={() =>
-            navigation.navigate("CabPreapprove", {
-              societyId: user?.SocietyId,
-            })
-          }
-        >
-          <View style={styles.preApprovedIcon}>
-            <Ionicons name="car-outline" size={30} color="#EAB308" />
-          </View>
-          <Text style={styles.iconText}>Cab</Text>
-        </TouchableOpacity>
-        
-        <TouchableOpacity
-          style={[styles.iconButton, { width: iconWidth }]}
-          onPress={() =>
-            navigation.navigate("DeliveryPreapprove", {
-              societyId: user?.SocietyId,
-            })
-          }
-        >
-          <View style={styles.preApprovedIcon}>
-            <Ionicons name="cube-outline" size={30} color="#EAB308" />
-          </View>
-          <Text style={styles.iconText}>Delivery</Text>
-        </TouchableOpacity>
-        
-        <TouchableOpacity
-          style={[styles.iconButton, { width: iconWidth }]}
-          onPress={() =>
-            navigation.navigate("FrequentPreapprove", {
-              societyId: user?.SocietyId,
-            })
-          }
-        >
-          <View style={styles.preApprovedIcon}>
-            <Ionicons name="repeat-outline" size={30} color="#EAB308" />
-          </View>
-          <Text style={styles.iconText}>Frequent</Text>
-        </TouchableOpacity>
-        
-        <TouchableOpacity
-          style={[styles.iconButton, { width: iconWidth }]}
-          onPress={() =>
-            navigation.navigate("OtherVisitors", {
-              societyId: user?.SocietyId,
-            })
-          }
-        >
-          <View style={styles.preApprovedIcon}>
-            <MaterialIcons name="more" size={24} color="#EAB308" />
-          </View>
-          <Text style={styles.iconText}>Others</Text>
-        </TouchableOpacity>
-      </ScrollView>
-      
-      {/* Right scroll indicator */}
-      {showRightIndicator && (
-        <View style={[styles.scrollIndicator, styles.rightIndicator]}>
-          <Ionicons name="chevron-forward" size={20} color="#666" />
-        </View>
-      )}
-    </View>
 
         {/* On Arrival section */}
 
@@ -507,23 +390,23 @@ const styles = StyleSheet.create({
   iconsRowContainer: {
     marginVertical: 20,
     paddingHorizontal: 16,
-    position: 'relative',
+    position: "relative",
   },
   scrollContent: {
-    alignItems: 'center',
+    alignItems: "center",
     paddingHorizontal: 5,
   },
   iconButton: {
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     paddingVertical: 8,
   },
   preApprovedIcon: {
     backgroundColor: "#Fff",
     padding: 8,
     borderRadius: 50,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     width: 46,
     height: 46,
   },
@@ -531,18 +414,18 @@ const styles = StyleSheet.create({
     marginTop: 4,
     fontSize: 12,
     color: "#666",
-    textAlign: 'center',
+    textAlign: "center",
   },
   scrollIndicator: {
-    position: 'absolute',
-    top: '-5%',
+    position: "absolute",
+    top: "-5%",
     transform: [{ translateY: -15 }],
     // backgroundColor: 'rgba(255, 255, 255, 0.8)',
     width: 30,
     height: 30,
     borderRadius: 15,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     zIndex: 10,
     // shadowColor: '#000',
     // shadowOffset: { width: 0, height: 1 },
