@@ -32,10 +32,13 @@ export default function LoginScreen() {
   };
 
   const handleLogin = async () => {
+    console.log("I am inside handleLogin");
     if (!email.trim() || !password.trim()) {
       Alert.alert("Error", "Please enter both email and password.");
       return;
     }
+
+    console.log("email:", email);
   
     setIsLoading(true);
   

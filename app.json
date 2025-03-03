@@ -28,8 +28,9 @@
     },
     "extra": {
       "eas": {
-        "projectId": "40796b55-51f8-4a41-9c9f-5d669167262f"
+        "projectId": "66d661c1-0bcf-4a0b-81b0-a040f5e5f12f"
       }
-    }
+    },
+    "owner": "parajbhatt"
   }
 }
