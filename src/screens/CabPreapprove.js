@@ -291,20 +291,24 @@ const styles = StyleSheet.create({
   buttonContainer: {
     marginTop: 24,
     marginBottom: 24,
-
     display: "flex",
     flexDirection: "row",
     justifyContent: "space-around",
+    
   },
   verifyEntryButton: {
     backgroundColor: "#4CAF50",
     padding: 16,
     borderRadius: 8,
+    width: "45%",
+    alignItems: "center",
   },
   verifyExitButton: {
     backgroundColor: "#f44336",
     padding: 16,
     borderRadius: 8,
+    width: "45%",
+    alignItems: "center",
   },
   disabledButton: {
     backgroundColor: "#cccccc",
