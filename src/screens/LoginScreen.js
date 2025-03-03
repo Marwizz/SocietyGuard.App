@@ -50,6 +50,7 @@ export default function LoginScreen() {
   
       if (response?.data?.data) {
         await AsyncStorage.setItem("userToken", response.data.token);
+        await AsyncStorage.setItem("userData", JSON.stringify(response.data.data));
         setUser(response.data.data);
         setIsAuthenticated(true);
         resetFields();
