@@ -29,7 +29,7 @@ const FancyNotification = ({ title, body, onClose, onPress }) => {
     // Auto dismiss after 5 seconds
     const timer = setTimeout(() => {
       dismissNotification();
-    }, 5000);
+    }, 10000);
 
     return () => clearTimeout(timer);
   }, []);
@@ -77,9 +77,7 @@ const FancyNotification = ({ title, body, onClose, onPress }) => {
           <Text style={styles.title}>{title}</Text>
           <Text style={styles.body}>{body}</Text>
         </View>
-        <TouchableOpacity style={styles.closeButton} onPress={dismissNotification}>
-          <Text style={styles.closeText}>×</Text>
-        </TouchableOpacity>
+        
       </TouchableOpacity>
     </Animated.View>
   );
@@ -294,25 +292,12 @@ const styles = StyleSheet.create({
   title: {
     fontWeight: 'bold',
     fontSize: 16,
-    color: '#78350F', // Dark brown color for better contrast on yellow
+    color: '#000', // Dark brown color for better contrast on yellow
     marginBottom: 4,
   },
   body: {
     fontSize: 14,
-    color: '#451A03', // Darker brown for body text
-  },
-  closeButton: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    backgroundColor: '#FEF3C7', // Light yellow background for close button
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  closeText: {
-    fontSize: 18,
-    color: '#78350F', // Dark brown color for better contrast
-    lineHeight: 20,
+    color: '#000', // Darker brown for body text
   },
 });
 
