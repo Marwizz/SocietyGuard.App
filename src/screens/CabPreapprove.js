@@ -55,7 +55,7 @@ export default function CabPreapprove({ route }) {
     if (selectedCab !== null) {
       try {
         setIsLoading(true);
-        const response = await verifyCabInvite(selectedCab,{
+        const response = await verifyCabInvite(selectedCab, {
           action: "entry",
           recipientid: recipientid,
         });
@@ -148,7 +148,6 @@ export default function CabPreapprove({ route }) {
                   style={[
                     styles.cabName,
                     selectedCab === cab._id && styles.selectedText,
-                
                   ]}
                 >
                   {cab.companyName}
@@ -208,15 +207,15 @@ export default function CabPreapprove({ route }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: "#f5f5f5",
   },
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     padding: 16,
-    backgroundColor: 'white',
+    backgroundColor: "white",
     borderBottomWidth: 1,
-    borderBottomColor: '#eee',
+    borderBottomColor: "#eee",
     paddingTop: 35,
   },
   backButton: {
@@ -224,42 +223,42 @@ const styles = StyleSheet.create({
   },
   backButtonText: {
     fontSize: 24,
-    color: '#333',
+    color: "#333",
   },
   headerTitle: {
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: "600",
     marginLeft: 12,
-    color: '#333',
+    color: "#333",
   },
   content: {
     flex: 1,
     padding: 16,
   },
   tableHeader: {
-    flexDirection: 'row',
+    flexDirection: "row",
     paddingVertical: 12,
     paddingHorizontal: 16,
-    backgroundColor: '#f8f8f8',
+    backgroundColor: "#f8f8f8",
     borderRadius: 8,
     marginBottom: 8,
   },
   columnHeader: {
-    color: '#666',
+    color: "#666",
     fontSize: 14,
-    fontWeight: '500',
+    fontWeight: "500",
     flex: 1,
   },
   scrollView: {
     flex: 1,
   },
   cabRow: {
-    flexDirection: 'row',
+    flexDirection: "row",
     padding: 16,
-    backgroundColor: 'white',
+    backgroundColor: "white",
     marginVertical: 4,
     borderRadius: 8,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: {
       width: 0,
       height: 1,
@@ -269,58 +268,60 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   selectedRow: {
-    backgroundColor: '#e3f2fd',
-    borderColor: '#2196f3',
+    backgroundColor: "#e3f2fd",
+    borderColor: "#2196f3",
     borderWidth: 1,
   },
   selectedText: {
-    color: '#2196f3',
-    fontWeight: '600',
+    color: "#2196f3",
+    fontWeight: "600",
   },
   companyName: {
     fontSize: 16,
-    color: '#333',
+    color: "#333",
   },
   vehicleNumber: {
     fontSize: 16,
-    color: '#333',
+    color: "#333",
   },
   houseId: {
     fontSize: 16,
-    color: '#666',
+    color: "#666",
   },
   buttonContainer: {
     marginTop: 24,
-    gap: 12,
+    marginBottom: 24,
+
+    display: "flex",
+    flexDirection: "row",
+    justifyContent: "space-around",
   },
   verifyEntryButton: {
-    backgroundColor: '#4CAF50',
+    backgroundColor: "#4CAF50",
     padding: 16,
     borderRadius: 8,
-    alignItems: 'center',
   },
   verifyExitButton: {
-    backgroundColor: '#f44336',
+    backgroundColor: "#f44336",
     padding: 16,
     borderRadius: 8,
-    alignItems: 'center',
   },
   disabledButton: {
-    backgroundColor: '#cccccc',
+    backgroundColor: "#cccccc",
     opacity: 0.7,
   },
   buttonText: {
-    color: 'white',
+    color: "white",
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   flex1: {
     flex: 1,
   },
   centerText: {
-    textAlign: 'center',
+    textAlign: "center",
   },
   rightText: {
-    textAlign: 'right',
+    textAlign: "right",
   },
 });
