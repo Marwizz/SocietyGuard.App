@@ -70,10 +70,8 @@ const FancyNotification = ({ title, body, onClose, onPress }) => {
       >
         <View style={styles.iconContainer}>
           <View style={styles.icon}>
-          <AntDesign name="notification" size={24} color="black" />
-
+            <AntDesign name="notification" size={24} color="#78350F" />
           </View>
-          
         </View>
         <View style={styles.textContainer}>
           <Text style={styles.title}>{title}</Text>
@@ -267,7 +265,7 @@ const styles = StyleSheet.create({
   },
   notificationContent: {
     flexDirection: 'row',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#EAB308', // Yellow color you requested
     borderRadius: 12,
     padding: 16,
     shadowColor: '#000',
@@ -286,6 +284,9 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
+    backgroundColor: '#FEF3C7', // Light yellow background for icon
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   textContainer: {
     flex: 1,
@@ -293,24 +294,24 @@ const styles = StyleSheet.create({
   title: {
     fontWeight: 'bold',
     fontSize: 16,
-    color: '#333333',
+    color: '#78350F', // Dark brown color for better contrast on yellow
     marginBottom: 4,
   },
   body: {
     fontSize: 14,
-    color: '#666666',
+    color: '#451A03', // Darker brown for body text
   },
   closeButton: {
     width: 24,
     height: 24,
     borderRadius: 12,
-    backgroundColor: '#F0F0F0',
+    backgroundColor: '#FEF3C7', // Light yellow background for close button
     justifyContent: 'center',
     alignItems: 'center',
   },
   closeText: {
     fontSize: 18,
-    color: '#999999',
+    color: '#78350F', // Dark brown color for better contrast
     lineHeight: 20,
   },
 });
