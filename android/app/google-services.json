@@ -1,29 +1,29 @@
-  {
-    "project_info": {
-      "project_number": "1099075229547",
-      "project_id": "residoguard-dea41",
-      "storage_bucket": "residoguard-dea41.firebasestorage.app"
-    },
-    "client": [
-      {
-        "client_info": {
-          "mobilesdk_app_id": "1:1099075229547:android:c4ed673f7ea53c3a8f9e2e",
-          "android_client_info": {
-            "package_name": "com.paraj.societyguardapp"
-          }
-        },
-        "oauth_client": [],
-        "api_key": [
-          {
-            "current_key": "AIzaSyB1T7siYbNLIPth2OuocZUwEZxbfPiPk2g"
-          }
-        ],
-        "services": {
-          "appinvite_service": {
-            "other_platform_oauth_client": []
-          }
+{
+  "project_info": {
+    "project_number": "1099075229547",
+    "project_id": "residoguard-dea41",
+    "storage_bucket": "residoguard-dea41.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1099075229547:android:c4ed673f7ea53c3a8f9e2e",
+        "android_client_info": {
+          "package_name": "com.paraj.societyguardapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB1T7siYbNLIPth2OuocZUwEZxbfPiPk2g"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
         }
       }
-    ],
-    "configuration_version": "1"
-  }
+    }
+  ],
+  "configuration_version": "1"
+}
