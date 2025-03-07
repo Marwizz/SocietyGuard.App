@@ -72,12 +72,12 @@ export default function HomeScreen() {
           color="#333"
           style={styles.icon}
         /> */}
-        <Ionicons
+        {/* <Ionicons
           name="notifications-outline"
           size={24}
           color="black"
           style={styles.icon}
-        />
+        /> */}
       </View>
       <PreApprovedOtp />
 

@@ -12,6 +12,7 @@ import {
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import AntDesign from "@expo/vector-icons/AntDesign";
+import Sound from 'react-native-sound';
 
 // Custom Notification Component
 const FancyNotification = ({ title, body, onClose, onPress }) => {
@@ -180,11 +181,35 @@ const FCMHandler = () => {
 
     return enabled;
   };
+  const playNotificationSound = () => {
+    // Enable playback in silent mode
+    Sound.setCategory('Playback');
+    
+    // Load and play the sound
+    const sound = new Sound('notification.wav', Sound.MAIN_BUNDLE, (error) => {
+      if (error) {
+        console.error('Failed to load notification sound:', error);
+        return;
+      }
+      
+      // Sound loaded successfully, play it
+      sound.play((success) => {
+        if (!success) {
+          console.error('Sound playback failed');
+        }
+        // Release the sound resource after playing
+        sound.release();
+      });
+    });
+  };
 
   // Show fancy in-app notification
   const showFancyNotification = (title, body) => {
     setCurrentNotification({ title, body });
     setNotificationVisible(true);
+    
+    // Play notification sound
+    playNotificationSound();
 
     // Auto hide after 5 seconds
     setTimeout(() => {
