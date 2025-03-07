@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "SocietyGuard.App",
-    "slug": "SocietyGuard.App",
+    "slug": "societyguard-app",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -16,13 +16,21 @@
       "supportsTablet": true
     },
     "android": {
+      "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.paraj.societyguardapp"
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "66d661c1-0bcf-4a0b-81b0-a040f5e5f12f"
+      }
+    },
+    "owner": "parajbhatt"
   }
 }

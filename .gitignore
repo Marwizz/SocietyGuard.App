@@ -34,3 +34,7 @@ yarn-error.*
 
 # typescript
 *.tsbuildinfo
+
+
+residoguard-dea41-firebase-adminsdk-fbsvc-e843563aac.json
+# google-services.json

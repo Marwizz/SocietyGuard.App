@@ -12,7 +12,7 @@ import {
 import React, { useContext, useEffect, useState } from "react";
 import { Ionicons } from "@expo/vector-icons";
 import { Picker } from "@react-native-picker/picker";
-import { API_BASE_URL } from "@env";
+import { EXPO_PUBLIC_BASE_URL } from "@env";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 import { GuardContext } from "../../GuardContext";
@@ -45,7 +45,7 @@ const DeliveryEntryModal = ({ visible, onClose, onSubmit, societyId }) => {
       }
 
       const response = await axios.get(
-        `${API_BASE_URL}/auth/listHouseBySocietyId/${societyId}`,
+        `${EXPO_PUBLIC_BASE_URL}/auth/listHouseBySocietyId/${societyId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -98,7 +98,7 @@ const DeliveryEntryModal = ({ visible, onClose, onSubmit, societyId }) => {
       };
 
       const response = await axios.post(
-        `${API_BASE_URL}/auth/delivery/create`,
+        `${EXPO_PUBLIC_BASE_URL}/auth/delivery/create`,
         visitorData,
         {
           headers: {

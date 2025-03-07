@@ -64,7 +64,7 @@ const GroupPreapprove = ({ route }) => {
   };
 
   const handleAddGuest = async () => {
-    if (!guestDetails.name.trim() || !guestDetails.mobile.trim()) {
+    if (!guestDetails.mobile.trim()) {
       Alert.alert("Error", "Please fill in all fields");
       return;
     }
@@ -110,11 +110,6 @@ const GroupPreapprove = ({ route }) => {
     }
   };
 
-  // const openModal = (partyCode) => {
-  //   setSelectedPartyCode(partyCode);
-  //   setModalVisible(true);
-  // };
-
   const openModal = (partyCode, invite) => {
     setSelectedPartyCode(partyCode);
     // Get the houseId from the selected invite
@@ -130,6 +125,7 @@ const GroupPreapprove = ({ route }) => {
           style={styles.backButton}
           onPress={() => navigation.goBack()}
         >
+          {/* Fixed: Wrapped icon in Text component */}
           <Text style={styles.backButtonText}>
             <Ionicons name="chevron-back" size={24} color="black" />
           </Text>
@@ -145,8 +141,7 @@ const GroupPreapprove = ({ route }) => {
         ) : (
           groupInvites.map((invite, index) => (
             <View key={invite._id || index} style={styles.card}>
-             <TouchableOpacity onPress={() => openModal(invite.partyCode, invite)}>
-                {" "}
+              <TouchableOpacity onPress={() => openModal(invite.partyCode, invite)}>
                 <View style={styles.cardContent}>
                   <View style={styles.leftContent}>
                     <View style={styles.infoRow}>
@@ -201,7 +196,10 @@ const GroupPreapprove = ({ route }) => {
                 onPress={() => setModalVisible(false)}
                 style={styles.closeButton}
               >
-                <Ionicons name="close" size={24} color="black" />
+                {/* Fixed: Wrapped icon in Text component */}
+                <Text>
+                  <Ionicons name="close" size={24} color="black" />
+                </Text>
               </TouchableOpacity>
             </View>
 
@@ -283,6 +281,9 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
+  },
+  leftContent: {
+    flex: 1,
   },
   infoRow: {
     flexDirection: "row",
