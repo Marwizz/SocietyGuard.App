@@ -64,7 +64,7 @@ const GroupPreapprove = ({ route }) => {
   };
 
   const handleAddGuest = async () => {
-    if (!guestDetails.name.trim() || !guestDetails.mobile.trim()) {
+    if (!guestDetails.mobile.trim()) {
       Alert.alert("Error", "Please fill in all fields");
       return;
     }

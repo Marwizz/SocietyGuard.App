@@ -11,6 +11,7 @@ export async function guardLogin(email, password) {
             email,
             password
           };
+          console.log("guardLogin_API BODY:", guardLogin_API);
         const response = await apiConnector("POST", guardLogin_API,  body);
         console.log("guardLogin_API RESPONSE:", response);
         return response;

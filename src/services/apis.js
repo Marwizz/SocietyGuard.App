@@ -1,4 +1,4 @@
-const BASE_URL = process.env.API_BASE_URL;
+const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 
 // AUTH ENDPOINTS
 export const authendpoints = {
