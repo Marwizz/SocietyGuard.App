@@ -34,7 +34,7 @@ const FancyNotification = ({ title, body, onClose, onPress }) => {
       }),
     ]).start();
 
-    // Auto dismiss after 5 seconds
+    
     const timer = setTimeout(() => {
       dismissNotification();
     }, 10000);
@@ -188,7 +188,7 @@ const FCMHandler = () => {
     try {
       // Load the sound file
       const { sound: notificationSound } = await Audio.Sound.createAsync(
-        require('./assets/notification.wav')
+        require('./assets/notification1.mp3')
       );
       
       setSound(notificationSound);
