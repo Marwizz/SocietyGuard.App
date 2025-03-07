@@ -12,7 +12,7 @@ import {
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import AntDesign from "@expo/vector-icons/AntDesign";
-import Sound from 'react-native-sound';
+import { Audio } from 'expo-av';
 
 // Custom Notification Component
 const FancyNotification = ({ title, body, onClose, onPress }) => {
@@ -121,6 +121,7 @@ const FCMHandler = () => {
   const { user } = useContext(GuardContext);
   const [notificationVisible, setNotificationVisible] = useState(false);
   const [currentNotification, setCurrentNotification] = useState(null);
+  const [sound, setSound] = useState();
 
   // Send FCM token to backend
   const sendTokenToBackend = async (token) => {
@@ -181,27 +182,32 @@ const FCMHandler = () => {
 
     return enabled;
   };
-  const playNotificationSound = () => {
-    // Enable playback in silent mode
-    Sound.setCategory('Playback');
-    
-    // Load and play the sound
-    const sound = new Sound('notification.wav', Sound.MAIN_BUNDLE, (error) => {
-      if (error) {
-        console.error('Failed to load notification sound:', error);
-        return;
-      }
+
+  // Play notification sound using expo-av
+  const playNotificationSound = async () => {
+    try {
+      // Load the sound file
+      const { sound: notificationSound } = await Audio.Sound.createAsync(
+        require('./assets/notification.wav')
+      );
       
-      // Sound loaded successfully, play it
-      sound.play((success) => {
-        if (!success) {
-          console.error('Sound playback failed');
-        }
-        // Release the sound resource after playing
-        sound.release();
-      });
-    });
+      setSound(notificationSound);
+      
+      // Play the sound
+      await notificationSound.playAsync();
+    } catch (error) {
+      console.error('Error playing notification sound:', error);
+    }
   };
+
+  // Clean up function for sound
+  useEffect(() => {
+    return sound
+      ? () => {
+          sound.unloadAsync();
+        }
+      : undefined;
+  }, [sound]);
 
   // Show fancy in-app notification
   const showFancyNotification = (title, body) => {
@@ -219,6 +225,13 @@ const FCMHandler = () => {
 
   useEffect(() => {
     const setup = async () => {
+      // Initialize audio
+      await Audio.setAudioModeAsync({
+        playsInSilentModeIOS: true,
+        staysActiveInBackground: false,
+        shouldDuckAndroid: true,
+      });
+      
       // Request permission
       const enabled = await requestUserPermission();
 
