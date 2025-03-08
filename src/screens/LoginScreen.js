@@ -92,8 +92,8 @@ export default function LoginScreen() {
 
           <View style={styles.logoSection}>
             <Text style={styles.logoText}>
-              Resi<Text style={styles.highlightText}>do </Text>
-              <Text style={styles.logoText}>Guard</Text>
+              Marwiz Living<Text style={styles.highlightText}> Guard </Text>
+              {/* <Text style={styles.logoText}>Guard</Text> */}
             </Text>
           </View>
 

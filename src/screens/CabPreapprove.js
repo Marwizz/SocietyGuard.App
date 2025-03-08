@@ -26,10 +26,10 @@ export default function CabPreapprove({ route }) {
   const fetchCabData = async () => {
     try {
       const response = await getAllCabInvite(societyId);
-      console.log("getAllCabInvite API RESPONSE:", response.data.data);
+      console.log("getAllCabInvite API RESPONSE:", response.data);
 
-      if (response?.data) {
-        setDeliveryData(response.data.data);
+      if (response) {
+        setDeliveryData(response.data);
       }
     } catch (error) {
       console.error("getAllCabInvite API ERROR:", error);

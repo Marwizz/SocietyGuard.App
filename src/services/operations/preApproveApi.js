@@ -164,8 +164,8 @@ export async function getAllDeliveries(societyId) {
     const url = `${getAllDeliveries_API}/${societyId}`;
 
     const response = await apiConnector("GET", url);
-    console.log("getAllDeliveries_API RESPONSE:", response);
-    return response;
+    console.log("getAllDeliveries_API RESPONSE:", response.data);
+    return response.data;
   } catch (error) {
     console.log("getAllDeliveries_API ERROR:", error);
     throw error;
@@ -181,8 +181,8 @@ export async function getAllCabInvite(societyId) {
     const url = `${getAllCabInvite_API}/${societyId}`;
 
     const response = await apiConnector("GET", url);
-    console.log("getAllCabInvite_API RESPONSE:", response);
-    return response;
+    console.log("getAllCabInvite_API RESPONSE:", response.data);
+    return response.data;
   } catch (error) {
     console.log("getAllCabInvite_API ERROR:", error);
     throw error;

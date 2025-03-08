@@ -17,16 +17,16 @@ export default function DeliveryPreapprove({ route }) {
   const [selectedCompany, setSelectedCompany] = useState(null);
   const [deliveryData, setDeliveryData] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-    const [recipientid, setRecipientid] = useState(null);
+  const [recipientid, setRecipientid] = useState(null);
   
 
   const fetchDeliveryData = async () => {
     try {
       const response = await getAllDeliveries(societyId);
-      console.log("getAllDeliveries API RESPONSE:", response.data.data);
+      console.log("getAllDeliveries API RESPONSE:", response.data);
 
-      if (response?.data) {
-        setDeliveryData(response.data.data);
+      if (response) {
+        setDeliveryData(response.data);
         
       }
     } catch (error) {
