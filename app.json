@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "SocietyGuard.App",
-    "slug": "societyguard-app",
+    "name": "Marwiz Living Guard ",
+    "slug": "Marwiz Living Guard",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -13,7 +13,10 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "UIBackgroundModes": ["audio", "fetch", "remote-notification"]
+      }
     },
     "android": {
       "googleServicesFile": "./google-services.json",
@@ -21,11 +24,7 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "permissions": [
-        "RECEIVE_BOOT_COMPLETED",
-        "VIBRATE",
-        "WAKE_LOCK"
-      ],
+      "permissions": ["RECEIVE_BOOT_COMPLETED", "VIBRATE", "WAKE_LOCK"],
       "package": "com.paraj.societyguardapp"
     },
     "web": {
