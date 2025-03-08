@@ -21,6 +21,11 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
+      "permissions": [
+        "RECEIVE_BOOT_COMPLETED",
+        "VIBRATE",
+        "WAKE_LOCK"
+      ],
       "package": "com.paraj.societyguardapp"
     },
     "web": {

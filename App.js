@@ -9,10 +9,110 @@ import {
   Animated,
   TouchableOpacity,
   Image,
+  Platform,
+  AppState,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import AntDesign from "@expo/vector-icons/AntDesign";
-import { Audio } from 'expo-av';
+import { Audio, InterruptionModeAndroid,
+  InterruptionModeIOS, } from 'expo-av';
+import * as BackgroundFetch from 'expo-background-fetch';
+import * as TaskManager from 'expo-task-manager';
+import * as Notifications from 'expo-notifications';
+
+// Define a background task identifier
+const BACKGROUND_NOTIFICATION_TASK = 'background-notification-task';
+
+// Register the task that will handle background notifications
+TaskManager.defineTask(BACKGROUND_NOTIFICATION_TASK, async ({ data, error }) => {
+  if (error) {
+    console.error("Background task error:", error);
+    return BackgroundFetch.BackgroundFetchResult.Failed;
+  }
+  
+  // Play sound in background if there's notification data
+  if (data && data.notification) {
+    await playBackgroundSound();
+  }
+  
+  return BackgroundFetch.BackgroundFetchResult.NewData;
+});
+const setupAudioMode = async () => {
+  try {
+    await Audio.setAudioModeAsync({
+      playsInSilentModeIOS: true,
+      staysActiveInBackground: true,
+      // Use numeric values for interruption modes as a safer approach
+      interruptionModeIOS: 1, // DUCK_OTHERS = 1, DO_NOT_MIX = 2, MIX_WITH_OTHERS = 0
+      shouldDuckAndroid: true,
+      interruptionModeAndroid: 1, // DUCK_OTHERS = 1, DO_NOT_MIX = 2, MIX_WITH_OTHERS = 0
+      playThroughEarpieceAndroid: true,
+    });
+    console.log("Audio mode configured successfully");
+  } catch (error) {
+    console.error("Error configuring audio mode:", error);
+  }
+};
+// Function to play sound in background
+const playBackgroundSound = async () => {
+  try {
+    // Configure audio first
+    await setupAudioMode();
+    
+    // Then play the sound
+    const { sound } = await Audio.Sound.createAsync(
+      require('./assets/notification1.mp3'),
+      { shouldPlay: true }
+    );
+    
+    // Unload sound after playing to prevent memory leaks
+    sound.setOnPlaybackStatusUpdate(status => {
+      if (status.didJustFinish) {
+        sound.unloadAsync();
+      }
+    });
+  } catch (error) {
+    console.error('Error playing background sound:', error);
+  }
+};
+
+// Register background fetch task (for iOS)
+async function registerBackgroundFetchAsync() {
+  try {
+    await BackgroundFetch.registerTaskAsync(BACKGROUND_NOTIFICATION_TASK, {
+      minimumInterval: 60, // minimum 60 seconds between fetches
+      stopOnTerminate: false, // continue in background
+      startOnBoot: true, // auto-start on device boot
+    });
+    console.log("Background fetch task registered");
+  } catch (err) {
+    console.log("Background fetch registration error:", err);
+  }
+}
+
+// Configure notifications for background behavior
+async function configureNotifications() {
+  // Set notification handler for when app is in background
+  Notifications.setNotificationHandler({
+    handleNotification: async () => ({
+      shouldShowAlert: true,
+      shouldPlaySound: true,
+      shouldSetBadge: true,
+    }),
+  });
+  
+  // Configure notification categories or channels
+  if (Platform.OS === 'android') {
+    await Notifications.setNotificationChannelAsync('default', {
+      name: 'Default',
+      importance: Notifications.AndroidImportance.MAX,
+      vibrationPattern: [0, 250, 250, 250],
+      lightColor: '#FFCC00',
+      sound: './assets/notification1.mp3', // Reference sound file
+      enableVibrate: true,
+    });
+  }
+}
 
 // Custom Notification Component
 const FancyNotification = ({ title, body, onClose, onPress }) => {
@@ -90,38 +190,13 @@ const FancyNotification = ({ title, body, onClose, onPress }) => {
   );
 };
 
-// NotificationManager to handle showing notifications
-const NotificationManager = () => {
-  const [notification, setNotification] = useState(null);
-
-  const showNotification = (title, body) => {
-    setNotification({ title, body });
-  };
-
-  const hideNotification = () => {
-    setNotification(null);
-  };
-
-  return {
-    showNotification,
-    hideNotification,
-    NotificationComponent: () =>
-      notification ? (
-        <FancyNotification
-          title={notification.title}
-          body={notification.body}
-          onClose={hideNotification}
-        />
-      ) : null,
-  };
-};
-
-// Create a component for FCM handling to use context
+// FCMHandler component
 const FCMHandler = () => {
   const { user } = useContext(GuardContext);
   const [notificationVisible, setNotificationVisible] = useState(false);
   const [currentNotification, setCurrentNotification] = useState(null);
   const [sound, setSound] = useState();
+  const [appState, setAppState] = useState(AppState.currentState);
 
   // Send FCM token to backend
   const sendTokenToBackend = async (token) => {
@@ -175,31 +250,81 @@ const FCMHandler = () => {
   };
 
   const requestUserPermission = async () => {
+    // Request Firebase messaging permission
     const authStatus = await messaging().requestPermission();
     const enabled =
       authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
       authStatus === messaging.AuthorizationStatus.PROVISIONAL;
+      
+    // Also request Expo notification permissions
+    await Notifications.requestPermissionsAsync({
+      ios: {
+        allowAlert: true,
+        allowBadge: true,
+        allowSound: true,
+        allowAnnouncements: true,
+      },
+    });
 
     return enabled;
   };
 
-  // Play notification sound using expo-av
+  // Play notification sound
   const playNotificationSound = async () => {
     try {
-      // Load the sound file
+      // Configure audio for foreground playback
+      await Audio.setAudioModeAsync({
+        playsInSilentModeIOS: true,
+        staysActiveInBackground: true,
+        interruptionModeIOS: InterruptionModeIOS.DuckOthers,
+        shouldDuckAndroid: true,
+        interruptionModeAndroid: InterruptionModeAndroid.DuckOthers,
+        playThroughEarpieceAndroid: true,
+      });
+      
+      // Load and play sound
       const { sound: notificationSound } = await Audio.Sound.createAsync(
         require('./assets/notification1.mp3')
       );
       
       setSound(notificationSound);
-      
-      // Play the sound
       await notificationSound.playAsync();
     } catch (error) {
       console.error('Error playing notification sound:', error);
     }
   };
 
+  // Configure notification handling in background
+  useEffect(() => {
+    // App state change handler
+    const handleAppStateChange = (nextAppState) => {
+      if (appState.match(/inactive|background/) && nextAppState === 'active') {
+        // App came to foreground, check for notifications
+        console.log('App has come to the foreground!');
+      }
+      setAppState(nextAppState);
+    };
+    
+    // Subscribe to app state changes
+    const appStateSubscription = AppState.addEventListener('change', handleAppStateChange);
+    
+    // Register background tasks and configure notifications
+    const setupBackgroundTasks = async () => {
+      await configureNotifications();
+      
+      // Register background fetch task (mainly for iOS)
+      if (Platform.OS === 'ios') {
+        await registerBackgroundFetchAsync();
+      }
+    };
+    
+    setupBackgroundTasks();
+    
+    return () => {
+      appStateSubscription.remove();
+    };
+  }, [appState]);
+  
   // Clean up function for sound
   useEffect(() => {
     return sound
@@ -228,8 +353,10 @@ const FCMHandler = () => {
       // Initialize audio
       await Audio.setAudioModeAsync({
         playsInSilentModeIOS: true,
-        staysActiveInBackground: false,
+        staysActiveInBackground: true,
+        interruptionModeIOS:InterruptionModeIOS.DuckOthers,
         shouldDuckAndroid: true,
+        interruptionModeAndroid: InterruptionModeAndroid.DuckOthers,
       });
       
       // Request permission
@@ -256,12 +383,31 @@ const FCMHandler = () => {
 
     setup();
 
-    // Handle notifications
-    const unsubscribeBackground = messaging().setBackgroundMessageHandler(
-      async (remoteMessage) => {
-        console.log("Message handled in the background!", remoteMessage);
+    // Configure Firebase handling for background messages
+    messaging().setBackgroundMessageHandler(async (remoteMessage) => {
+      console.log("Message handled in the background!", remoteMessage);
+      
+      // Play sound even when app is in background
+      await playBackgroundSound();
+      
+      // Trigger background task with notification data
+      BackgroundFetch.scheduleTaskAsync(BACKGROUND_NOTIFICATION_TASK, {
+        notification: remoteMessage.notification,
+      });
+      
+      // Create local notification that will play sound in background
+      if (Platform.OS === 'android') {
+        await Notifications.scheduleNotificationAsync({
+          content: {
+            title: remoteMessage.notification?.title || "New Notification",
+            body: remoteMessage.notification?.body || "You have a new notification",
+            sound: 'notification1.mp3', // Reference audio file
+            priority: Notifications.AndroidNotificationPriority.MAX,
+          },
+          trigger: null,
+        });
       }
-    );
+    });
 
     // Handle notification that opened the app from background state
     const unsubscribeOpenedApp = messaging().onNotificationOpenedApp(
@@ -278,7 +424,7 @@ const FCMHandler = () => {
       async (remoteMessage) => {
         console.log("A new FCM message arrived!", remoteMessage);
 
-        // Show fancy in-app notification instead of default Alert
+        // Show fancy in-app notification
         showFancyNotification(
           remoteMessage.notification?.title || "New Notification",
           remoteMessage.notification?.body || "You have a new notification"
@@ -294,8 +440,6 @@ const FCMHandler = () => {
             "Notification caused app to open from quit state:",
             remoteMessage.notification
           );
-          // Navigate to appropriate screen based on notification type
-          // navigation.navigate(...) if needed
         }
       });
 
@@ -304,9 +448,8 @@ const FCMHandler = () => {
       if (unsubscribeOpenedApp) {
         unsubscribeOpenedApp();
       }
-      // Note: Background handlers don't need to be unsubscribed
     };
-  }, [user]); // Re-run when user changes
+  }, [user]);
 
   // Return the fancy notification component if it's visible
   return notificationVisible && currentNotification ? (
@@ -315,7 +458,6 @@ const FCMHandler = () => {
       body={currentNotification.body}
       onClose={() => setNotificationVisible(false)}
       onPress={() => {
-        // Handle notification press - e.g., navigate to a specific screen
         console.log("Notification pressed");
         setNotificationVisible(false);
       }}
@@ -375,6 +517,53 @@ const styles = StyleSheet.create({
 });
 
 export default function App() {
+  // Initialize background notification setup when app first launches
+  useEffect(() => {
+    const setupInitialConfig = async () => {
+      // Request all necessary permissions at app startup
+      try {
+        // Request notification permissions early
+        await Notifications.requestPermissionsAsync({
+          ios: {
+            allowAlert: true,
+            allowBadge: true,
+            allowSound: true,
+            allowAnnouncements: true,
+          },
+        });
+
+        // For iOS, set these badge-related settings
+        await Notifications.setBadgeCountAsync(0);
+        
+        // Configure initial audio settings
+        await Audio.setAudioModeAsync({
+          playsInSilentModeIOS: true,
+          staysActiveInBackground: true,
+          interruptionModeIOS:InterruptionModeIOS.DuckOthers,
+          shouldDuckAndroid: true,
+          interruptionModeAndroid: InterruptionModeAndroid.DuckOthers,
+          playThroughEarpieceAndroid: true,
+        });
+        
+        // Set up notification channels for Android
+        if (Platform.OS === 'android') {
+          await Notifications.setNotificationChannelAsync('default', {
+            name: 'Default',
+            importance: Notifications.AndroidImportance.MAX,
+            vibrationPattern: [0, 250, 250, 250],
+            lightColor: '#FFCC00',
+            sound: './assets/notification1.mp3',
+            enableVibrate: true,
+          });
+        }
+      } catch (error) {
+        console.error('Error setting up initial notification config:', error);
+      }
+    };
+    
+    setupInitialConfig();
+  }, []);
+
   return (
     <GuardProvider>
       <FCMHandler />
