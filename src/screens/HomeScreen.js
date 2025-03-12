@@ -262,7 +262,14 @@ export default function HomeScreen() {
         {/* Alerts section */}
         <View style={styles.sectionContainer}>
           <Text style={styles.sectionTitle}>Alerts</Text>
-          <TouchableOpacity style={styles.optionButton}>
+          <TouchableOpacity
+            style={styles.optionButton}
+            onPress={() =>
+              navigation.navigate("Alerts", {
+                societyId: user?.SocietyId,
+              })
+            }
+          >
             <View style={styles.alertIcon}>
               <Ionicons name="alert-outline" size={24} color="#EF4444" />
             </View>

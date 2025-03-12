@@ -1,3 +1,5 @@
+import { get } from "react-native/Libraries/TurboModule/TurboModuleRegistry";
+
 const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 
 // AUTH ENDPOINTS
@@ -24,4 +26,9 @@ export const onarrivalendpoints={
     guestwaiting_API : BASE_URL + "/auth/society-pending-visitors",
     cabWaiting_API : BASE_URL + "/auth/cab/society/waiting",
     deliveryWaiting_API : BASE_URL +"/auth/delivery/society/waiting"
+}
+
+export const alertsendpoints={
+    getAllAlerts_API : BASE_URL + "/auth/alerts/society",
+    updateAlert_API : BASE_URL + "/auth/alerts"
 }
