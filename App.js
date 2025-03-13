@@ -25,6 +25,7 @@ import { updateAlerts } from "./src/services/operations/alertApi";
 const BACKGROUND_NOTIFICATION_TASK = "background-notification-task";
 
 // Register the task that will handle background notifications
+// Update the background task
 TaskManager.defineTask(
   BACKGROUND_NOTIFICATION_TASK,
   async ({ data, error }) => {
@@ -35,7 +36,10 @@ TaskManager.defineTask(
 
     // Play sound in background if there's notification data
     if (data && data.notification) {
-      await playBackgroundSound();
+      const isAlert =
+        data.isAlert ||
+        (data.alertData && data.alertData.type === "Security Alert");
+      await playBackgroundSound(isAlert);
     }
 
     return BackgroundFetch.BackgroundFetchResult.NewData;
@@ -58,16 +62,20 @@ const setupAudioMode = async () => {
   }
 };
 // Function to play sound in background
-const playBackgroundSound = async () => {
+// Update the playBackgroundSound function
+const playBackgroundSound = async (isAlert = false) => {
   try {
     // Configure audio first
     await setupAudioMode();
 
-    // Then play the sound
-    const { sound } = await Audio.Sound.createAsync(
-      require("./assets/notification1.mp3"),
-      { shouldPlay: true }
-    );
+    // Then play the sound based on whether it's an alert or not
+    const soundSource = isAlert
+      ? require("./assets/visitorbuzzer.wav")
+      : require("./assets/notification1.mp3");
+
+    const { sound } = await Audio.Sound.createAsync(soundSource, {
+      shouldPlay: true,
+    });
 
     // Unload sound after playing to prevent memory leaks
     sound.setOnPlaybackStatusUpdate((status) => {
@@ -95,29 +103,45 @@ async function registerBackgroundFetchAsync() {
 }
 
 // Configure notifications for background behavior
+// Update the configureNotifications function to include the buzzer
 async function configureNotifications() {
   // Set notification handler for when app is in background
   Notifications.setNotificationHandler({
-    handleNotification: async () => ({
-      shouldShowAlert: true,
-      shouldPlaySound: true,
-      shouldSetBadge: true,
-    }),
+    handleNotification: async (notification) => {
+      const isAlert = notification.request.content.data?.isAlert === true;
+      return {
+        shouldShowAlert: true,
+        shouldPlaySound: true,
+        shouldSetBadge: true,
+        // Use the appropriate sound based on notification type
+        sound: isAlert ? "visitorbuzzer.wav" : "notification1.mp3",
+      };
+    },
   });
 
   // Configure notification categories or channels
   if (Platform.OS === "android") {
+    // Create a default notification channel
     await Notifications.setNotificationChannelAsync("default", {
       name: "Default",
       importance: Notifications.AndroidImportance.MAX,
       vibrationPattern: [0, 250, 250, 250],
       lightColor: "#FFCC00",
-      sound: "notification1.mp3", // Reference sound file
+      sound: "notification1.mp3",
+      enableVibrate: true,
+    });
+
+    // Create a separate channel for alerts with the buzzer sound
+    await Notifications.setNotificationChannelAsync("alerts", {
+      name: "Security Alerts",
+      importance: Notifications.AndroidImportance.MAX,
+      vibrationPattern: [0, 250, 250, 250],
+      lightColor: "#FF0000",
+      sound: "visitorbuzzer.wav",
       enableVibrate: true,
     });
   }
 }
-
 // Custom Notification Component
 const FancyNotification = ({ title, body, onClose, onPress }) => {
   const slideAnim = new Animated.Value(-100);
@@ -204,7 +228,6 @@ const FCMHandler = () => {
   const [alertId, setAlertId] = useState(null);
   const [buzzerInterval, setBuzzerInterval] = useState(null);
 
-
   // Send FCM token to backend
   const sendTokenToBackend = async (token) => {
     try {
@@ -276,45 +299,38 @@ const FCMHandler = () => {
     return enabled;
   };
 
-    // Play notification sound continuously for alerts
-    const playAlertSound = async () => {
-      try {
-        // Configure audio for alert playback
-        await Audio.setAudioModeAsync({
-          playsInSilentModeIOS: true,
-          staysActiveInBackground: true,
-          interruptionModeIOS: InterruptionModeIOS.DuckOthers,
-          shouldDuckAndroid: true,
-          interruptionModeAndroid: InterruptionModeAndroid.DuckOthers,
-          playThroughEarpieceAndroid: true,
-        });
-  
-        // Create a repeating interval to play the sound until acknowledged
-        const interval = setInterval(async () => {
-          // Load and play sound
-          const { sound: alertSound } = await Audio.Sound.createAsync(
-            require("./assets/notification1.mp3")
-          );
-  
-          setSound(alertSound);
-          await alertSound.playAsync();
-          
-          // Set up listener to unload after playing to prevent memory leaks
-          alertSound.setOnPlaybackStatusUpdate((status) => {
-            if (status.didJustFinish) {
-              alertSound.unloadAsync();
-            }
-          });
-        }, 3000); // Play every 3 seconds
-  
-        setBuzzerInterval(interval);
-        return interval;
-      } catch (error) {
-        console.error("Error playing alert sound:", error);
-      }
-    };
-  
-  
+  // Play notification sound continuously for alerts
+  // Update the playAlertSound function to use visitorbuzzer.wav
+  // Play notification sound continuously for alerts
+const playAlertSound = async () => {
+  try {
+    // Configure audio for alert playback with maximum priority
+    await Audio.setAudioModeAsync({
+      playsInSilentModeIOS: true,
+      staysActiveInBackground: true,
+      interruptionModeIOS: InterruptionModeIOS.DuckOthers,
+      shouldDuckAndroid: true,
+      interruptionModeAndroid: InterruptionModeAndroid.DuckOthers,
+      playThroughEarpieceAndroid: false, // Play through speaker for alerts
+    });
+
+    // Load the sound once
+    const { sound: alertSound } = await Audio.Sound.createAsync(
+      require("./assets/visitorbuzzer.wav"),
+      { shouldPlay: true, isLooping: true } // Set isLooping to true
+    );
+
+    // Save the sound reference to be able to stop it later
+    setSound(alertSound);
+    
+    // Start playing with looping enabled
+    await alertSound.playAsync();
+    
+    return null; // No interval needed anymore since we're using native looping
+  } catch (error) {
+    console.error("Error playing alert sound:", error);
+  }
+};
 
   // Play notification sound
   const playNotificationSound = async () => {
@@ -341,44 +357,45 @@ const FCMHandler = () => {
     }
   };
 
-    // Handle acknowledging an alert
-    const acknowledgeAlert = async () => {
-      if (alertId && user) {
-        try {
-          // Call the updateAlerts function
-          const response = await updateAlerts(alertId, "acknowledged", user._id);
-          console.log("Alert acknowledged:", response.data);  
-          const result = response;
-          
-          if (result.data.success) {
-            console.log("Alert acknowledged successfully");
-            
-            // Clear the buzzer interval
-            if (buzzerInterval) {
-              clearInterval(buzzerInterval);
-              setBuzzerInterval(null);
-            }
-            
-            // Stop and unload any playing sound
-            if (sound) {
-              // await sound.stopAsync(); // error comming that's why commented
-              await sound.unloadAsync();
-              setSound(null);
-            }
-            // Hide the notification
-            setNotificationVisible(false);
-            setIsAlertNotification(false);
-            setCurrentNotification(null);
-            setAlertId(null);
-          } else {
-            console.error("Failed to acknowledge alert:", result.message);
-          }
-        } catch (error) {
-          console.error("Error acknowledging alert:", error);
+  // Handle acknowledging an alert
+  // Handle acknowledging an alert
+const acknowledgeAlert = async () => {
+  if (alertId && user) {
+    try {
+      // Call the updateAlerts function
+      const response = await updateAlerts(alertId, "acknowledged", user._id);
+      console.log("Alert acknowledged:", response.data);
+      const result = response;
+
+      if (result.data.success) {
+        console.log("Alert acknowledged successfully");
+
+        // Clear the buzzer interval (keeping this for backward compatibility)
+        if (buzzerInterval) {
+          clearInterval(buzzerInterval);
+          setBuzzerInterval(null);
         }
+
+        // Stop and unload any playing sound
+        if (sound) {
+          await sound.stopAsync(); // First stop the sound (uncomment this line)
+          await sound.setIsLoopingAsync(false); // Ensure looping is disabled
+          await sound.unloadAsync();
+          setSound(null);
+        }
+        // Hide the notification
+        setNotificationVisible(false);
+        setIsAlertNotification(false);
+        setCurrentNotification(null);
+        setAlertId(null);
+      } else {
+        console.error("Failed to acknowledge alert:", result.message);
       }
-    };
-  
+    } catch (error) {
+      console.error("Error acknowledging alert:", error);
+    }
+  }
+};
 
   // Configure notification handling in background
   useEffect(() => {
@@ -427,14 +444,19 @@ const FCMHandler = () => {
   }, [sound, buzzerInterval]);
 
   // Show fancy in-app notification with alert handling
-  const showFancyNotification = (title, body, isAlert = false, alertData = null) => {
-    const isSecurityAlert = isAlert || 
-      (alertData && alertData.type === "Security Alert");
-    
+  const showFancyNotification = (
+    title,
+    body,
+    isAlert = false,
+    alertData = null
+  ) => {
+    const isSecurityAlert =
+      isAlert || (alertData && alertData.type === "Security Alert");
+
     setIsAlertNotification(isSecurityAlert);
 
     console.log("do i reach here or not");
-    
+
     if (isSecurityAlert && alertData && alertData.alertEntryId) {
       setAlertId(alertData.alertEntryId);
       // Start continuous alert sound
@@ -445,10 +467,10 @@ const FCMHandler = () => {
       playNotificationSound();
     }
 
-    setCurrentNotification({ 
-      title, 
+    setCurrentNotification({
+      title,
       body,
-      isAlert: isSecurityAlert
+      isAlert: isSecurityAlert,
     });
     setNotificationVisible(true);
   };
@@ -489,29 +511,29 @@ const FCMHandler = () => {
     setup();
 
     // Handle background messages
+    // Update the background message handler
     messaging().setBackgroundMessageHandler(async (remoteMessage) => {
       console.log("Message handled in the background!", remoteMessage);
 
-      const isAlert = remoteMessage.data && 
-        (remoteMessage.data.type === "Security Alert" || 
-         (remoteMessage.notification && 
-          remoteMessage.notification.title && 
-          remoteMessage.notification.title.includes("Alert")));
+      const isAlert =
+        remoteMessage.data &&
+        (remoteMessage.data.type === "Security Alert" ||
+          (remoteMessage.notification &&
+            remoteMessage.notification.title &&
+            remoteMessage.notification.title.includes("Alert")));
 
       // Play continuous sound for alerts even in background
-      if (isAlert) {
-        await playBackgroundSound();
-      } else {
-        await playBackgroundSound();
-      }
+      await playBackgroundSound(isAlert);
 
       // For immediate execution of a background task with data
-      if (await TaskManager.isTaskRegisteredAsync(BACKGROUND_NOTIFICATION_TASK)) {
+      if (
+        await TaskManager.isTaskRegisteredAsync(BACKGROUND_NOTIFICATION_TASK)
+      ) {
         // Pass data to registered task
         TaskManager.executeTaskAsync(BACKGROUND_NOTIFICATION_TASK, {
           notification: remoteMessage.notification,
           isAlert: isAlert,
-          alertData: remoteMessage.data
+          alertData: remoteMessage.data,
         });
       }
 
@@ -520,13 +542,14 @@ const FCMHandler = () => {
         await Notifications.scheduleNotificationAsync({
           content: {
             title: remoteMessage.notification?.title || "New Notification",
-            body: remoteMessage.notification?.body || "You have a new notification",
-            sound: "notification1.mp3",
+            body:
+              remoteMessage.notification?.body || "You have a new notification",
+            sound: isAlert ? "visitorbuzzer.wav" : "notification1.mp3",
             priority: Notifications.AndroidNotificationPriority.MAX,
             data: {
               isAlert: isAlert,
-              alertData: remoteMessage.data
-            }
+              alertData: remoteMessage.data,
+            },
           },
           trigger: null,
         });
@@ -547,11 +570,12 @@ const FCMHandler = () => {
       async (remoteMessage) => {
         console.log("A new FCM message arrived!", remoteMessage);
 
-        const isAlert = 
-          (remoteMessage.data && remoteMessage.data.type === "Security Alert") ||
-          (remoteMessage.notification && 
-           remoteMessage.notification.title && 
-           remoteMessage.notification.title.includes("Alert"));
+        const isAlert =
+          (remoteMessage.data &&
+            remoteMessage.data.type === "Security Alert") ||
+          (remoteMessage.notification &&
+            remoteMessage.notification.title &&
+            remoteMessage.notification.title.includes("Alert"));
 
         // Show fancy in-app notification
         showFancyNotification(
@@ -595,108 +619,111 @@ const FCMHandler = () => {
   //   loadSoundAsset();
   // }, []);
 
-// Enhanced Notification Component that handles regular and alert notifications differently
-const AlertNotification = ({ title, body, isAlert, onClose, onPress, onAcknowledge }) => {
-  const slideAnim = new Animated.Value(-100);
-  const opacityAnim = new Animated.Value(0);
+  // Enhanced Notification Component that handles regular and alert notifications differently
+  const AlertNotification = ({
+    title,
+    body,
+    isAlert,
+    onClose,
+    onPress,
+    onAcknowledge,
+  }) => {
+    const slideAnim = new Animated.Value(-100);
+    const opacityAnim = new Animated.Value(0);
 
-  useEffect(() => {
-    // Animation to slide in
-    Animated.parallel([
-      Animated.timing(slideAnim, {
-        toValue: 0,
-        duration: 300,
-        useNativeDriver: true,
-      }),
-      Animated.timing(opacityAnim, {
-        toValue: 1,
-        duration: 300,
-        useNativeDriver: true,
-      }),
-    ]).start();
+    useEffect(() => {
+      // Animation to slide in
+      Animated.parallel([
+        Animated.timing(slideAnim, {
+          toValue: 0,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+        Animated.timing(opacityAnim, {
+          toValue: 1,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+      ]).start();
 
-    // Only auto-dismiss regular notifications
-    if (!isAlert) {
-      const timer = setTimeout(() => {
-        dismissNotification();
-      }, 10000);
-      return () => clearTimeout(timer);
-    }
-  }, []);
+      // Only auto-dismiss regular notifications
+      if (!isAlert) {
+        const timer = setTimeout(() => {
+          dismissNotification();
+        }, 10000);
+        return () => clearTimeout(timer);
+      }
+    }, []);
 
-  const dismissNotification = () => {
-    Animated.parallel([
-      Animated.timing(slideAnim, {
-        toValue: -100,
-        duration: 300,
-        useNativeDriver: true,
-      }),
-      Animated.timing(opacityAnim, {
-        toValue: 0,
-        duration: 300,
-        useNativeDriver: true,
-      }),
-    ]).start(() => {
-      if (onClose) onClose();
-    });
-  };
+    const dismissNotification = () => {
+      Animated.parallel([
+        Animated.timing(slideAnim, {
+          toValue: -100,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+        Animated.timing(opacityAnim, {
+          toValue: 0,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+      ]).start(() => {
+        if (onClose) onClose();
+      });
+    };
 
-  return (
-    <Animated.View
-      style={[
-        styles.notificationContainer,
-        {
-          transform: [{ translateY: slideAnim }],
-          opacity: opacityAnim,
-        },
-      ]}
-    >
-      <TouchableOpacity
+    return (
+      <Animated.View
         style={[
-          styles.notificationContent,
-          isAlert && styles.alertNotificationContent
+          styles.notificationContainer,
+          {
+            transform: [{ translateY: slideAnim }],
+            opacity: opacityAnim,
+          },
         ]}
-        onPress={() => {
-          if (onPress) onPress();
-          if (!isAlert) {
-            dismissNotification();
-          }
-        }}
       >
-        <View style={styles.iconContainer}>
-          <View style={[
-            styles.icon, 
-            isAlert && styles.alertIcon
-          ]}>
-            <AntDesign 
-              name={isAlert ? "warning" : "notification"} 
-              size={24} 
-              color={isAlert ? "#FFFFFF" : "#78350F"} 
-            />
+        <TouchableOpacity
+          style={[
+            styles.notificationContent1,
+            isAlert && styles.alertNotificationContent,
+          ]}
+          onPress={() => {
+            if (onPress) onPress();
+            if (!isAlert) {
+              dismissNotification();
+            }
+          }}
+        >
+          <View style={styles.iconContainer}>
+            <View style={[styles.icon, isAlert && styles.alertIcon]}>
+              <AntDesign
+                name={isAlert ? "warning" : "notification"}
+                size={24}
+                color={isAlert ? "#Ff0000" : "#78350F"}
+              />
+            </View>
           </View>
-        </View>
-        <View style={styles.textContainer}>
-          <Text style={[
-            styles.title,
-            isAlert && styles.alertTitle
-          ]}>{title}</Text>
-          <Text style={[
-            styles.body,
-            isAlert && styles.alertBody
-          ]}>{body}</Text>
-          
-          {isAlert && (
-            <TouchableOpacity 
-              style={styles.acknowledgeButton}
-              onPress={onAcknowledge}
-            >
-              <Text style={styles.acknowledgeText}>Acknowledge</Text>
-            </TouchableOpacity>
-          )}
-        </View>
-      </TouchableOpacity>
-    </Animated.View>
-  );};
+          <View style={styles.textContainer}>
+            <Text style={[styles.title, isAlert && styles.alertTitle]}>
+              {title}
+            </Text>
+            <Text style={[styles.body, isAlert && styles.alertBody]}>
+              {body}
+            </Text>
+
+            {isAlert && (
+              <TouchableOpacity
+                style={styles.acknowledgeButton}
+                onPress={onAcknowledge}
+              >
+                <Text style={styles.acknowledgeText}>Acknowledge</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+        </TouchableOpacity>
+      </Animated.View>
+    );
+  };
 
   return (
     <>
@@ -715,12 +742,7 @@ const AlertNotification = ({ title, body, isAlert, onClose, onPress, onAcknowled
       )}
     </>
   );
-  
-
-}
-
-
-
+};
 
 // Styles for the fancy notification
 const styles = StyleSheet.create({
@@ -732,6 +754,22 @@ const styles = StyleSheet.create({
     zIndex: 999,
     alignItems: "center",
     paddingHorizontal: 16,
+  },
+  notificationContent1:{
+    backgroundColor: "#ff0000",
+    flexDirection: "row",
+    
+    borderRadius: 12,
+    padding: 16,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+    width: "100%",
+    maxWidth: 500,
+    alignItems: "center",
+
   },
   notificationContent: {
     flexDirection: "row",
@@ -767,10 +805,21 @@ const styles = StyleSheet.create({
     color: "#000", // Dark brown color for better contrast on yellow
     marginBottom: 4,
   },
+  alertTitle:{
+    color: "#fff",
+
+  },
   body: {
     fontSize: 14,
     color: "#000", // Darker brown for body text
   },
+  alertBody:{
+    color: "#fff",
+
+  },
+  acknowledgeText:{
+    color: "#fff",
+  }
 });
 
 export default function App() {
