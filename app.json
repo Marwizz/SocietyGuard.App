@@ -7,12 +7,15 @@
     "icon": "./assets/Marwiz_Living.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
-    "splash": {
-    },
+    "splash": {},
     "ios": {
       "supportsTablet": true,
       "infoPlist": {
-        "UIBackgroundModes": ["audio", "fetch", "remote-notification"]
+        "UIBackgroundModes": [
+          "audio",
+          "fetch",
+          "remote-notification"
+        ]
       }
     },
     "android": {
@@ -20,7 +23,11 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/Marwiz_Living.png"
       },
-      "permissions": ["RECEIVE_BOOT_COMPLETED", "VIBRATE", "WAKE_LOCK"],
+      "permissions": [
+        "RECEIVE_BOOT_COMPLETED",
+        "VIBRATE",
+        "WAKE_LOCK"
+      ],
       "package": "com.paraj.societyguardapp"
     },
     "web": {
@@ -28,9 +35,8 @@
     },
     "extra": {
       "eas": {
-        "projectId": "66d661c1-0bcf-4a0b-81b0-a040f5e5f12f"
+        "projectId": "4bda3ea8-e3e2-4b95-8b54-f707c0a30c8f"
       }
-    },
-    "owner": "parajbhatt"
+    }
   }
 }

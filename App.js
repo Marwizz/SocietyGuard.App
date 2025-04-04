@@ -80,7 +80,7 @@ const playBackgroundSound = async (isAlert = false) => {
     // Unload sound after playing to prevent memory leaks
     sound.setOnPlaybackStatusUpdate((status) => {
       if (status.didJustFinish) {
-        sound.unloadAsync();
+        sound.unloadAsync();``
       }
     });
   } catch (error) {
