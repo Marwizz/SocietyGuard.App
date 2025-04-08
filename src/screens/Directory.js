@@ -88,11 +88,11 @@ export default function Directory() {
         }
       );
 
-      console.log("Members:", response.data[0]);
+      console.log("Members:", response.data.data);
 
-      if (response.data && response.data[0] && response.data[0].data) {
-        setAllMembers(response.data[0].data);
-        setMembers(response.data[0].data);
+      if (response.data && response.data && response.data.data) {
+        setAllMembers(response.data.data);
+        setMembers(response.data.data);
       }
     } catch (error) {
       console.error(
@@ -145,7 +145,7 @@ export default function Directory() {
           flatNumber:
             typeof member.HouseId === "object"
               ? member.HouseId.Name
-              : member.HouseId || "No Building",
+              : member.FlatId.flatNumber || "No Building",
           initials: initials.toUpperCase(),
           color: colors[colorIndex],
           contactNo: member.ownerContact || "N/A",
