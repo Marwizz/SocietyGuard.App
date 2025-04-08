@@ -47,6 +47,10 @@ export default function HomeScreen() {
     setShowRightIndicator(contentOffsetX < contentWidth - layoutWidth - 10);
   };
 
+  useEffect(() => {
+    console.log("user inside homescreen", user);
+  }, []);
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -62,7 +66,7 @@ export default function HomeScreen() {
         </TouchableOpacity>
 
         <View style={styles.headerTextContainer}>
-          <Text style={styles.name}>{user?.memberName || "Ramu"}</Text>
+          <Text style={styles.name}>{user?.FullName || "Ramu"}</Text>
           <Text style={styles.block}>{user?.HouseId?.Name || "Main Gate"}</Text>
         </View>
         {/* 

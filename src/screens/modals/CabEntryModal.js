@@ -53,6 +53,7 @@ const CabEntryModal = ({ visible, onClose, onSubmit, societyId }) => {
           },
         }
       );
+      console.log("Houses response:", response.data);
 
       setHouses(response.data);
       setError(null);
@@ -66,7 +67,7 @@ const CabEntryModal = ({ visible, onClose, onSubmit, societyId }) => {
   };
 
   const handleHouseChange = (houseName) => {
-    const selectedHouse = houses.find((house) => house.Name === houseName);
+    const selectedHouse = houses.find((house) => house.flatNumber === houseName);
     setSelectedHouse(selectedHouse);
     setGuestData({ ...guestData, houseNumber: houseName });
   };
@@ -189,8 +190,8 @@ const CabEntryModal = ({ visible, onClose, onSubmit, societyId }) => {
                     {houses.map((house) => (
                       <Picker.Item
                         key={house._id}
-                        label={house.Name}
-                        value={house.Name}
+                        label={house.flatNumber}
+                        value={house.flatNumber}
                       />
                     ))}
                   </Picker>

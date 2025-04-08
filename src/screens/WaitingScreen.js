@@ -78,7 +78,7 @@ function GuestTabScreen({ societyId, refreshing, onRefresh, isLoading }) {
                 Purpose : {visitor.PurposeOfVisit}
               </Text>
               <Text style={styles.visitorType}>
-                Flat Number : {visitor.House?.Name}
+                Flat Number : {visitor?.FlatId?.flatNumber}
               </Text>
             </View>
             <TouchableOpacity
@@ -115,7 +115,7 @@ function CabTabScreen({ societyId, refreshing, onRefresh, isLoading }) {
     try {
       const response = await cabWaiting(societyId);
       setCabVisitors(response?.data?.data || []);
-      console.log(response?.data?.data )
+      console.log("cab visitors are ", response?.data?.data )
     } catch (error) {
       console.error("Error fetching cab visitors:", error);
       setCabVisitors([]);
@@ -157,7 +157,7 @@ function CabTabScreen({ societyId, refreshing, onRefresh, isLoading }) {
              {visitor.companyName}
               </Text>
               <Text style={styles.visitorType}>
-                Flat Number : {visitor.houseId?.Name}
+                Flat Number : {visitor.FlatId?.flatNumber}
               </Text>
            
               <Text style={styles.visitorType}>
@@ -197,6 +197,7 @@ function DeliveryTabScreen({ societyId, refreshing, onRefresh, isLoading }) {
   const fetchDeliveryVisitors = async () => {
     try {
       const response = await deliveryWaiting(societyId);
+      console.log("delivery visitors are ", response?.data?.data )
       setDeliveryVisitors(response?.data?.data || []);
     } catch (error) {
       console.error("Error fetching delivery visitors:", error);
@@ -239,7 +240,7 @@ function DeliveryTabScreen({ societyId, refreshing, onRefresh, isLoading }) {
                {visitor.companyName}
               </Text>
               <Text style={styles.visitorType}>
-                Flat Number: {visitor.houseId?.Name}
+                Flat Number: {visitor.FlatId?.flatNumber}
               </Text>
              
             </View>

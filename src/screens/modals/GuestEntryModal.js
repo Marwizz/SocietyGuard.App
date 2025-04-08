@@ -67,6 +67,8 @@ const GuestEntryModal = ({ visible, onClose, onSubmit, societyId }) => {
         }
       );
 
+      console.log("house data is ", response.data);
+
       setHouses(response.data);
       setError(null);
     } catch (err) {
@@ -79,7 +81,7 @@ const GuestEntryModal = ({ visible, onClose, onSubmit, societyId }) => {
   };
 
   const handleHouseChange = (houseName) => {
-    const selectedHouse = houses.find(house => house.Name === houseName);
+    const selectedHouse = houses.find(house => house.flatNumber === houseName);
     setSelectedHouse(selectedHouse);
     setGuestData({ ...guestData, houseNumber: houseName });
   };
@@ -211,8 +213,8 @@ const GuestEntryModal = ({ visible, onClose, onSubmit, societyId }) => {
                     {houses.map((house) => (
                       <Picker.Item 
                         key={house._id} 
-                        label={house.Name} 
-                        value={house.Name}
+                        label={house.flatNumber} 
+                        value={house.flatNumber}
                       />
                     ))}
                   </Picker>

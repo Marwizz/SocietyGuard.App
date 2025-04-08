@@ -154,7 +154,7 @@ export default function DeliveryPreapprove({ route }) {
                     selectedCompany === company._id && styles.selectedText,
                   ]}
                 >
-                  {company.houseId.Name}
+                  {company?.FlatId?.flatNumber}
                 </Text>
               </TouchableOpacity>
             ))
