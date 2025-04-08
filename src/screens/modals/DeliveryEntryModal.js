@@ -65,7 +65,7 @@ const DeliveryEntryModal = ({ visible, onClose, onSubmit, societyId }) => {
   };
 
   const handleHouseChange = (houseName) => {
-    const selectedHouse = houses.find((house) => house.Name === houseName);
+    const selectedHouse = houses.find((house) => house.flatNumber === houseName);
     setSelectedHouse(selectedHouse);
     setGuestData({ ...guestData, houseNumber: houseName });
   };
@@ -171,8 +171,8 @@ const DeliveryEntryModal = ({ visible, onClose, onSubmit, societyId }) => {
                     {houses.map((house) => (
                       <Picker.Item
                         key={house._id}
-                        label={house.Name}
-                        value={house.Name}
+                        label={house.flatNumber}
+                        value={house.flatNumber}
                       />
                     ))}
                   </Picker>

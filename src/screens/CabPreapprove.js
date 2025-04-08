@@ -168,7 +168,7 @@ export default function CabPreapprove({ route }) {
                     selectedCab === cab._id && styles.selectedText,
                   ]}
                 >
-                  {cab.houseId.Name}
+                  {cab?.FlatId?.flatNumber}
                 </Text>
               </TouchableOpacity>
             ))
