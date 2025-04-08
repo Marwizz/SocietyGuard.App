@@ -50,7 +50,13 @@ export default function HomeScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity>
+        <TouchableOpacity onPress=
+          {() =>
+            navigation.navigate("Profile", {
+              societyId: user?.SocietyId,
+            })
+          }> 
+          
           {user?.profileImage ? (
             <Image
               source={{ uri: user.profileImage }}

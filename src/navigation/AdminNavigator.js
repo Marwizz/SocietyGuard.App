@@ -8,6 +8,7 @@ import CabPreapprove from "../screens/CabPreapprove";
 import FrequentPreapprove from "../screens/FrequentPreapprove";
 import OthersVisitor from "../screens/OthersVisitor";
 import SecurityAlerts from "../screens/Alerts";
+import Profile from "../screens/Profile";
 
 
 const Stack = createStackNavigator();
@@ -23,6 +24,7 @@ export default function AdminNavigator() {
       <Stack.Screen name="FrequentPreapprove" component={FrequentPreapprove} />
       <Stack.Screen name="OtherVisitors" component={OthersVisitor} />
       <Stack.Screen name="Alerts" component={SecurityAlerts} />
+      <Stack.Screen name="Profile" component={Profile} />
 
      
     </Stack.Navigator>
