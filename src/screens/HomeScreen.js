@@ -5,7 +5,7 @@ import {
   TouchableOpacity,
   TextInput,
   Alert,
-  Dimensions,
+  Dimensions, Image
 } from "react-native";
 import React, { useContext, useState, useRef, useEffect } from "react";
 import { Ionicons } from "@expo/vector-icons";
@@ -61,9 +61,9 @@ export default function HomeScreen() {
             })
           }> 
           
-          {user?.profileImage ? (
+          {user?.Photo ? (
             <Image
-              source={{ uri: user.profileImage }}
+              source={{ uri: user.Photo }}
               style={styles.profileImage}
             />
           ) : (
@@ -314,7 +314,11 @@ const styles = StyleSheet.create({
     borderBottomColor: "#E0E0E0",
     zIndex: 1000,
   },
-
+  profileImage: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+  },
   headerTextContainer: {
     flex: 1,
     marginLeft: 8,
