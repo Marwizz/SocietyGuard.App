@@ -28,7 +28,7 @@
         "VIBRATE",
         "WAKE_LOCK"
       ],
-      "package": "com.paraj.societyguardapp"
+      "package": "com.barodaweb.MarwizLivingGuard"
     },
     "web": {
       "favicon": "./assets/favicon.png"
