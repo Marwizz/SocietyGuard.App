@@ -247,7 +247,7 @@ export default function HomeScreen() {
           societyId={user?.SocietyId}
           onSubmit={(guestData) => {
             // Handle the guest entry data here
-            console.log(guestData);
+            console.log("guest data is ", guestData);
           }}
         />
         <CabEntryModal
@@ -265,7 +265,7 @@ export default function HomeScreen() {
           societyId={user?.SocietyId}
           onSubmit={(guestData) => {
             // Handle the guest entry data here
-            console.log(guestData);
+            console.log("delivery data is ", guestData);
           }}
         />
 

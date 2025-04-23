@@ -33,6 +33,8 @@ function GuestTabScreen({ societyId, refreshing, onRefresh, isLoading }) {
     try {
       const response = await guestWaiting(societyId);
       setVisitors(response?.data?.data || []);
+      console.log("guest visitors are ", response?.data?.data )
+      
     } catch (error) {
       console.error("Error fetching guest visitors:", error);
       setVisitors([]);
@@ -78,7 +80,7 @@ function GuestTabScreen({ societyId, refreshing, onRefresh, isLoading }) {
                 Purpose : {visitor.PurposeOfVisit}
               </Text>
               <Text style={styles.visitorType}>
-                Flat Number : {visitor?.FlatId?.flatNumber}
+                Flat Number : {visitor?.Flat?.flatNumber}
               </Text>
             </View>
             <TouchableOpacity

@@ -32,3 +32,10 @@ export const alertsendpoints={
     getAllAlerts_API : BASE_URL + "/auth/alerts/society",
     updateAlert_API : BASE_URL + "/auth/alerts"
 }
+
+export const exitendpoints={
+    visitorExit_API : BASE_URL + "/auth/list-all-past-guests",
+    cabExit_API : BASE_URL + "/auth/cab/past-entries",
+    deliveryExit_API : BASE_URL + "/auth/delivery/past-entries"
+}
+
