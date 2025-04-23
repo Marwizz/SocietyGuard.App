@@ -14,9 +14,13 @@
         "UIBackgroundModes": [
           "audio",
           "fetch",
+          "remote-notification",
+          "audio",
+          "fetch",
           "remote-notification"
         ]
-      }
+      },
+      "bundleIdentifier": "com.barodaweb.MarwizLivingGuard"
     },
     "android": {
       "googleServicesFile": "./google-services.json",
