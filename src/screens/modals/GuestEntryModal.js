@@ -92,6 +92,16 @@ const GuestEntryModal = ({ visible, onClose, onSubmit, societyId }) => {
       return;
     }
 
+    if (!selectedHouse || !selectedHouse._id) {
+      Alert.alert("Error", "Please select a valid house number");
+      return;
+    }
+
+    if (!user || !user._id) {
+      Alert.alert("Error", "Security guard information is missing");
+      return;
+    }
+
     setLoading(true);
     try {
       const token = await AsyncStorage.getItem("userToken");
@@ -109,6 +119,8 @@ const GuestEntryModal = ({ visible, onClose, onSubmit, societyId }) => {
         TimeOfArrival: new Date().toISOString(),
         IsActive: true
       };
+
+      console.log('Sending visitor data:', visitorData); // Add logging for debugging
 
       const response = await axios.post(
         `${EXPO_PUBLIC_BASE_URL}/auth/create/visitorVerification`,
@@ -133,7 +145,11 @@ const GuestEntryModal = ({ visible, onClose, onSubmit, societyId }) => {
       }
     } catch (err) {
       console.error('Error creating visitor entry:', err);
-      Alert.alert("Error", "Failed to create visitor entry. Please try again.");
+      console.error('Error response:', err.response?.data); // Log the error response
+      Alert.alert(
+        "Error", 
+        err.response?.data?.message || "Failed to create visitor entry. Please try again."
+      );
     } finally {
       setLoading(false);
     }
