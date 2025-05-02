@@ -12,6 +12,7 @@ import { GuardContext } from "../GuardContext";
 import { Ionicons } from "@expo/vector-icons";
 import { EXPO_PUBLIC_IMAGE_BASE_URL } from "@env";
 import { useNavigation } from "@react-navigation/native";
+import Constants from 'expo-constants';
 
 export default function GuardProfile({ route }) {
   const { societyId } = route.params;
@@ -91,6 +92,10 @@ export default function GuardProfile({ route }) {
         <Ionicons name="log-out-outline" size={20} color="#fff" />
         <Text style={styles.logoutText}>Logout</Text>
       </TouchableOpacity>
+
+      <View style={styles.versionContainer}>
+        <Text style={styles.versionText}>Version {Constants.expoConfig.version}</Text>
+      </View>
     </ScrollView>
   );
 }
@@ -182,5 +187,14 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "bold",
     marginLeft: 8,
+  },
+  versionContainer: {
+    alignItems: 'center',
+    marginTop: 20,
+    marginBottom: 40,
+  },
+  versionText: {
+    fontSize: 14,
+    color: '#666666',
   },
 });

@@ -122,7 +122,7 @@ const CabEntryModal = ({ visible, onClose, onSubmit, societyId }) => {
         onClose();
       }
     } catch (err) {
-      console.error("Error creating visitor entry:", err);
+      console.error("Error creating cab entry:", err);
       Alert.alert("Error", "Failed to create visitor entry. Please try again.");
     } finally {
       setLoading(false);

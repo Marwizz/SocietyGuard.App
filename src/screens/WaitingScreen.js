@@ -9,7 +9,7 @@ import {
   Alert,
   RefreshControl,
 } from "react-native";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
 import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
@@ -18,6 +18,7 @@ import {
   cabWaiting,
   deliveryWaiting,
 } from "../services/operations/onArrivalApi";
+import { GuardContext } from "../GuardContext";
 
 const Tab = createMaterialTopTabNavigator();
 
@@ -33,6 +34,8 @@ function GuestTabScreen({ societyId, refreshing, onRefresh, isLoading }) {
     try {
       const response = await guestWaiting(societyId);
       setVisitors(response?.data?.data || []);
+      console.log("guest visitors are ", response?.data?.data )
+      
     } catch (error) {
       console.error("Error fetching guest visitors:", error);
       setVisitors([]);
@@ -78,7 +81,7 @@ function GuestTabScreen({ societyId, refreshing, onRefresh, isLoading }) {
                 Purpose : {visitor.PurposeOfVisit}
               </Text>
               <Text style={styles.visitorType}>
-                Flat Number : {visitor?.FlatId?.flatNumber}
+                Flat Number : {visitor?.Flat?.flatNumber}
               </Text>
             </View>
             <TouchableOpacity
@@ -266,17 +269,18 @@ function DeliveryTabScreen({ societyId, refreshing, onRefresh, isLoading }) {
   );
 }
 
-export default function WaitingScreen({ societyId, route }) {
+export default function WaitingScreen({ route }) {
   const navigation = useNavigation();
-  const id = societyId || route.params?.societyId;
+  const { user } = useContext(GuardContext);
+  const societyId = route?.params?.societyId || user?.SocietyId;
   const [isLoading, setIsLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
-    if (id) {
+    if (societyId) {
       setIsLoading(false);
     }
-  }, [id]);
+  }, [societyId]);
 
   const handleRefresh = () => {
     setRefreshing(true);
@@ -319,7 +323,7 @@ export default function WaitingScreen({ societyId, route }) {
         <Tab.Screen name="Guest">
           {() => (
             <GuestTabScreen
-              societyId={id}
+              societyId={societyId}
               refreshing={refreshing}
               onRefresh={handleRefresh}
               isLoading={isLoading}
@@ -329,7 +333,7 @@ export default function WaitingScreen({ societyId, route }) {
         <Tab.Screen name="Cab">
           {() => (
             <CabTabScreen
-              societyId={id}
+              societyId={societyId}
               refreshing={refreshing}
               onRefresh={handleRefresh}
               isLoading={isLoading}
@@ -339,7 +343,7 @@ export default function WaitingScreen({ societyId, route }) {
         <Tab.Screen name="Delivery">
           {() => (
             <DeliveryTabScreen
-              societyId={id}
+              societyId={societyId}
               refreshing={refreshing}
               onRefresh={handleRefresh}
               isLoading={isLoading}

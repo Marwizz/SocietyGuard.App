@@ -31,6 +31,7 @@
         <category android:name="android.intent.category.BROWSABLE"/>
         <data android:scheme="com.paraj.societyguardapp"/>
         <data android:scheme="exp+societyguard-app"/>
+        <data android:scheme="com.barodaweb.MarwizLivingGuard"/>
       </intent-filter>
     </activity>
   </application>

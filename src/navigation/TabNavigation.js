@@ -57,8 +57,8 @@ export default function TabNavigation() {
       />
       <Tab.Screen
         name="Waiting"
-        children={() => <WaitingScreen societyId={user?.SocietyId} />}
-
+        component={WaitingScreen}
+        initialParams={{ societyId: user?.SocietyId }}
         options={{
           tabBarLabel: ({ focused }) => (
             <Text

@@ -14,9 +14,13 @@
         "UIBackgroundModes": [
           "audio",
           "fetch",
+          "remote-notification",
+          "audio",
+          "fetch",
           "remote-notification"
         ]
-      }
+      },
+      "bundleIdentifier": "com.barodaweb.MarwizLivingGuard"
     },
     "android": {
       "googleServicesFile": "./google-services.json",
@@ -28,7 +32,7 @@
         "VIBRATE",
         "WAKE_LOCK"
       ],
-      "package": "com.paraj.societyguardapp"
+      "package": "com.barodaweb.MarwizLivingGuard"
     },
     "web": {
       "favicon": "./assets/favicon.png"

@@ -1,4 +1,4 @@
-package com.paraj.societyguardapp
+package com.barodaweb.MarwizLivingGuard
 
 import android.app.Application
 import android.content.res.Configuration
